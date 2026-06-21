@@ -18,6 +18,6 @@ node_modules/
 .mypy_cache/
 site/
 .ruff_cache/
-workflows/
+workflows/*.log
 scripts/
 *.png
