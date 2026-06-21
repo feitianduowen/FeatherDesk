@@ -631,8 +631,8 @@ def main():
 
     args = parser.parse_args()
 
-    print(f"🚀 启动 GUI: http://{args.host}:{args.port}")
-    print(f"   按 Ctrl+C 停止")
+    print(f"Starting GUI: http://{args.host}:{args.port}")
+    print(f"Press Ctrl+C to stop")
 
     app.run(host=args.host, port=args.port, debug=args.debug)
 
