@@ -1,77 +1,53 @@
 {
-  "timestamp": 1782100470.7001152,
+  "timestamp": 1782101226.1162465,
   "vision_model": "mimo-v2.5",
   "total": 17,
-  "passed": 6,
+  "passed": 10,
   "skipped": [
     {
       "id": "3.1",
       "site": "taobao",
       "task": "在淘宝搜索机械键盘，返回前5个商品的名称和价格",
-      "reason": "失败 3 次: 页面被空白弹窗遮挡，未显示预期的搜索结果内容"
+      "reason": "失败 3 次: 页面被登录弹窗遮挡，无法查看预期的搜索结果内容。"
     },
     {
       "id": "4.1",
       "site": "jd",
       "task": "在京东搜索机械键盘，返回前5个商品的名称和价格",
-      "reason": "失败 3 次: 页面为京东首页而非机械键盘搜索结果页"
+      "reason": "失败 3 次: 页面显示为登录页面，而非预期的搜索结果页面"
     },
     {
       "id": "5.1",
       "site": "pdd",
       "task": "在拼多多搜索手机壳，返回前5个商品的名称和价格",
-      "reason": "失败 3 次: 页面显示的是拼多多首页，而非搜索结果页面，未找到手机壳商品列表"
-    },
-    {
-      "id": "6.1",
-      "site": "dangdang",
-      "task": "在当当网搜索Python编程，返回前5本书的名称和价格",
-      "reason": "失败 3 次: 页面未显示Python编程书籍列表，而是显示了搜索无结果的提示。"
+      "reason": "失败 3 次: 页面为空白，未显示拼多多搜索结果"
     },
     {
       "id": "7.1",
       "site": "zhihu",
       "task": "在知乎搜索Python怎么学，返回前3个问题的标题",
-      "reason": "失败 3 次: 页面显示登录弹窗，未见Python学习相关搜索结果"
+      "reason": "失败 3 次: 页面被登录弹窗覆盖，未显示搜索结果"
     },
     {
       "id": "8.1",
       "site": "douban",
       "task": "在豆瓣搜索肖申克的救赎，返回电影的评分",
-      "reason": "失败 3 次: 页面没有显示搜索结果，而是显示空搜索提示，未包含预期电影信息"
+      "reason": "失败 3 次: 页面是豆瓣网首页，不是搜索结果页面，且未找到肖申克的救赎电影信息"
     },
     {
       "id": "12.1",
       "site": "gitee",
       "task": "在Gitee搜索Python，返回前5个仓库的名称",
-      "reason": "失败 3 次: 页面为空白，未显示预期内容"
-    },
-    {
-      "id": "13.1",
-      "site": "baike",
-      "task": "在百度百科查询人工智能，返回词条的简介",
-      "reason": "失败 3 次: 页面显示的是百度百科主页，而非预期的'人工智能'词条页面"
+      "reason": "失败 3 次: 页面是空白的，没有显示任何内容。"
     },
     {
       "id": "14.1",
       "site": "wenku",
       "task": "在百度文库搜索Python教程，返回前5个文档的标题",
-      "reason": "失败 3 次: 页面显示百度文库首页，而非搜索结果页面"
-    },
-    {
-      "id": "15.1",
-      "site": "weather",
-      "task": "查询北京今天的天气，返回温度和天气状况",
-      "reason": "失败 3 次: 页面未显示北京天气信息"
-    },
-    {
-      "id": "16.1",
-      "site": "weibo",
-      "task": "打开微博热搜榜，返回前10条热搜话题",
-      "reason": "失败 3 次: 无法生成脚本"
+      "reason": "失败 3 次: 页面为百度文库首页，未显示搜索结果"
     }
   ],
-  "pass_rate": 35.3,
+  "pass_rate": 58.8,
   "results": [
     {
       "id": "1.1",
@@ -79,9 +55,9 @@
       "task": "帮我在百度搜索 Python 教程",
       "status": "PASS",
       "attempts": 1,
-      "url": "https://www.baidu.com/s?ie=utf-8&f=8&rsv_bp=1&rsv_idx=1&tn=baidu&wd=Python%20%E6%95%99%E7%A8%8B&fenlei=256&rsv_pq=0x9e841a05006b93aa&rsv_t=6fcaCud%2FiObKrwJONl3UEPRkZeVFhirFlTLru1NQGDKteXDhx37E5e32WCni&rqlang=en&rsv_enter=1&rsv_dl=ib&rsv_btype=i&rsv_sug9=eb_1",
-      "vision_reason": "页面显示百度搜索结果，包含Python教程相关的链接和标题",
-      "vision_details": "页面为百度搜索结果页，顶部搜索栏显示搜索词“以色列被特朗普背叛了”，但搜索结果主体显示多个Python教程相关条目，例如“Python 教程 — Python 3.14.6 文档”、“Python 教程 — Python 3.11.15 文档”、“Python基础教学-python自学教程非常详细-【免费】”等。页面结构正常，有搜索结果列表、相关搜索等元素，未出现空白或错误页，符合预期行为。",
+      "url": "https://www.baidu.com/s?ie=utf-8&f=8&rsv_bp=1&rsv_idx=1&tn=baidu&wd=Python%20%E6%95%99%E7%A8%8B&fenlei=256&rsv_pq=0x9feda2b700cb82a5&rsv_t=61ee4Tzlg3byZ5rjk2d3OpJ%2BLUnlEiYkDhaOBaCzHNs2BI4rmQoDVwucxJv3&rqlang=en&rsv_enter=1&rsv_dl=ib&rsv_btype=i&rsv_sug9=eb_1",
+      "vision_reason": "页面正确显示了百度搜索结果，且内容全部围绕‘Python教程’展开，包含丰富的链接、标题和描述信息。",
+      "vision_details": "1. 页面结构：确认为百度搜索结果页面，左上角有百度Logo和搜索框，主体为搜索结果列表。\n2. 核心内容验证：页面核心区域（自顶部广告位之后）展示了大量与‘Python教程’直接相关的搜索结果，包括：\n   - 多个版本的官方或教程文档链接（如‘Python教程 — Python 3.14.6文档’、‘Python基础教学-Python自学教程非常详细-[免费]’）。\n   - 多媒体教程（如‘Python教程 - 视频大全 - 高清在线观看’）。\n   - 百度文库资料（如‘Python教程 - 百度文库’）。\n   - 知识体系文章（如‘Python学习路线:从入门到精通’）。\n   - CSDN、知乎等社区的入门教程。\n   - Python软件下载链接。\n3. 相关性补充：页面右侧有‘相关搜索’栏（如‘菜鸟教程python在线编程’），底部也有推荐内容，均与Python学习相关。\n4. 结论：页面完整、有效地呈现了预期的‘Python教程相关的链接和标题’搜索结果，内容丰富且高度相关，符合预期。",
       "screenshot": "logs/test_1.1_1.png",
       "script": "goto(\"https://www.baidu.com\")\nwait_for_navigation()\nrun_js('document.querySelector(\\\"#kw\\\").value = \\\"Python 教程\\\"')\nrun_js('document.querySelector(\\\"#su\\\").click()')\nwait(3)\nlog(\"百度搜索完成: Python 教程\")"
     },
@@ -91,11 +67,11 @@
       "task": "在百度搜索人工智能，返回前5条搜索结果的标题",
       "status": "PASS",
       "attempts": 2,
-      "url": "https://www.baidu.com/s?ie=utf-8&f=8&rsv_bp=1&rsv_idx=1&tn=baidu&wd=%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD%EF%BC%8C%E8%BF%94%E5%9B%9E%E5%89%8D5%E6%9D%A1%E6%90%9C%E7%B4%A2%E7%BB%93%E6%9E%9C%E7%9A%84%E6%A0%87%E9%A2%98&fenlei=256&rsv_pq=0xf9e1b7f1000f2933&rsv_t=c4ffoo%2F7qFhiHdVjd631%2F7yRt27ZUf8FAF3vTjWTxozhsro8cgsrSL3iJFCP&rqlang=en&rsv_enter=1&rsv_dl=ib&rsv_btype=i&rsv_sug9=eb_1",
-      "vision_reason": "页面显示百度搜索结果，且包含多个标题，超过5条",
-      "vision_details": "页面为百度搜索结果页，搜索框中显示查询词'以色列被特朗普背叛了'，但搜索结果内容与'人工智能'相关。页面主体显示搜索结果列表，每个条目都有标题，例如'关于人工智能的标语 - 百度文库'、'2025高考作文热点「人工智能」：金句+标题+高分范文'、'MCP协议实战:为AI助手集成实时网络搜索能力-CSDN博客'、'「香港中文」大学联合研究团队让AIquot侦探qu..t学会了一种全新...'、'百度AI搜索工具教程资料怎么生成一行一个标题-人工智能-PHP中文网'等，至少可见5个标题。页面底部有分页导航（第1页，共10页），表明有更多结果。页面无空白或错误，符合预期行为。",
+      "url": "https://www.baidu.com/s?ie=utf-8&f=8&rsv_bp=1&rsv_idx=1&tn=baidu&wd=%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD&fenlei=256&rsv_pq=0xa0eb4e09004f1492&rsv_t=e2dcWxanOg%2BBz44wB99FFcn%2B3P37XL8hmionleD7idYfbR%2FYESgIEIO6I50C&rqlang=en&rsv_enter=1&rsv_dl=ib&rsv_btype=i&rsv_sug9=eb_1",
+      "vision_reason": "页面显示了百度搜索结果，并包含超过5条标题，符合预期。",
+      "vision_details": "截图显示一个完整的百度搜索结果页面，左侧主区域列出了多个搜索结果标题，包括'人工智能 - 百度百科'、'人工智能(中国普通高等学校本科专业) - 百度百科'、'人工智能_官方网站'、'人工智能板块_龙头股一览表_股票频道_同花顺金融网'、'人工智能设计 - 稿定设计'等，至少有8条标题，因此满足'包含5条标题'的条件。页面内容正常，无错误或空白，搜索结果结构清晰。",
       "screenshot": "logs/test_1.2_2.png",
-      "script": "goto(\"https://www.baidu.com\")\nwait_for_navigation()\nrun_js('document.querySelector(\\\"#kw\\\").value = \\\"人工智能，返回前5条搜索结果的标题\\\"')\nrun_js('document.querySelector(\\\"#su\\\").click()')\nwait(3)\nlog(\"百度搜索完成: 人工智能，返回前5条搜索结果的标题\")"
+      "script": "goto(\"https://www.baidu.com\")\nwait_for_navigation()\nrun_js('document.querySelector(\\\"#kw\\\").value = \\\"人工智能\\\"')\nrun_js('document.querySelector(\\\"#su\\\").click()')\nwait(3)\nlog(\"百度搜索完成: 人工智能\")"
     },
     {
       "id": "2.1",
@@ -103,11 +79,23 @@
       "task": "在搜狗搜索 Python 教程",
       "status": "PASS",
       "attempts": 1,
-      "url": "https://www.sogou.com/web?query=Python+%E6%95%99%E7%A8%8B&_asf=www.sogou.com&_ast=&w=01019900&p=40040100&ie=utf8&from=index-nologin&s_from=index&sourceid=9_01_03&sessiontime=1782099935432",
-      "vision_reason": "页面显示搜狗搜索结果，包含多个Python教程相关链接",
-      "vision_details": "截图显示搜狗搜索结果页面，顶部有搜狗标志和搜索框（关键词为'Python 教程'）。页面主体包含多个搜索结果条目，如'Python基础教程'、'Python 教程 -- Python 3.11.15 文档'、'Python基础教程,Python入门教程(非常详细) - C语言中文网'等，均与Python教程直接相关。页面无空白、错误或不相关内容，符合预期行为。",
+      "url": "https://www.sogou.com/web?query=Python+%E6%95%99%E7%A8%8B&_asf=www.sogou.com&_ast=&w=01019900&p=40040100&ie=utf8&from=index-nologin&s_from=index&sourceid=9_01_03&sessiontime=1782100809217",
+      "vision_reason": "页面成功显示了搜狗搜索结果，包含Python教程相关的链接。",
+      "vision_details": "页面顶部有搜狗搜索标志和搜索框，查询为'Python教程'，主区域列出了多个搜索结果链接，如'Python基础教程 - Python入门_Python爬虫'、'Python教程 — Python 3.11.15 文档'等，每个结果都包含标题、摘要和链接，内容与Python教程直接相关。此外，页面还包含辅助部分如'大家还在搜'、'全网热搜榜'和精选视频，进一步丰富了搜索结果的展示。所有预期元素均存在且页面完整加载，无空白或错误。",
       "screenshot": "logs/test_2.1_1.png",
       "script": "goto(\"https://www.sogou.com\")\nwait_for_navigation()\nfill(\"#query\", \"Python 教程\")\nclick(\"#stb\")\nwait_for_navigation()\nlog(\"搜狗搜索完成: Python 教程\")"
+    },
+    {
+      "id": "6.1",
+      "site": "dangdang",
+      "task": "在当当网搜索Python编程，返回前5本书的名称和价格",
+      "status": "PASS",
+      "attempts": 1,
+      "url": "https://search.dangdang.com/?key=Python%B1%E0%B3%CC&act=input",
+      "vision_reason": "页面正确显示当当网搜索结果，包含Python编程书籍列表",
+      "vision_details": "截图显示的是当当网（dangdang.com）的搜索结果页面，搜索关键词为“Python编程”。页面顶部有搜索框和导航栏，左侧有分类筛选区域，中间主体部分为书籍列表，包含多本Python编程相关书籍（如《Python编程：从入门到实践》《Python数据分析》等），每本书显示封面、书名、价格、作者、出版社等信息，底部有分页栏，符合“当当网搜索结果，包含Python编程书籍列表”的预期行为。",
+      "screenshot": "logs/test_6.1_1.png",
+      "script": "goto(\"https://www.dangdang.com\")\nwait_for_navigation()\nrun_js('document.querySelector(\\\"#key_S\\\").value = \\\"Python编程\\\"')\nrun_js('document.querySelector(\\\".button\\\").click()')\nwait(3)\nlog(\"当当搜索完成: Python编程\")"
     },
     {
       "id": "9.1",
@@ -115,11 +103,11 @@
       "task": "在B站搜索Python教程，返回前5个视频的标题",
       "status": "PASS",
       "attempts": 1,
-      "url": "https://search.bilibili.com/all?keyword=Python%E6%95%99%E7%A8%8B%EF%BC%8C%E8%BF%94%E5%9B%9E%E5%89%8D5%E4%B8%AA%E8%A7%86%E9%A2%91%E7%9A%84%E6%A0%87%E9%A2%98",
-      "vision_reason": "页面成功显示B站搜索结果，包含Python教程视频列表",
-      "vision_details": "分析结果：1) 页面顶部显示Bilibili Logo和导航栏；2) 搜索框内显示搜索关键词'Python教程'；3) 搜索结果标签显示'视频 99+'，表明搜索到大量视频结果；4) 页面主体部分展示了多个Python教程视频卡片，包括'3小时超快速入门Python'、'盘点查看Python版本信息的7种方式'、'会考Python系列-顺序结构及应用'、'python怎么运行py文件'、'Python之os模块讲解'等；5) 每个视频卡片包含缩略图、播放量、弹幕数、时长、标题、UP主名称和发布日期；6) 页面底部有分页器和Bilibili标准页脚。整体完全符合预期的B站Python教程搜索结果页面。",
+      "url": "https://search.bilibili.com/all?keyword=Python%E6%95%99%E7%A8%8B",
+      "vision_reason": "页面正确显示了B站针对'Python教程'的搜索结果，包含大量相关视频列表。",
+      "vision_details": "页面结构完整，顶部有B站导航栏和已填写'Python教程'的搜索框。主体部分为搜索结果，包含筛选标签（视频99+）、排序选项（综合排序、最多播放等）以及核心内容区。内容区展示了多个Python教程相关的视频卡片，每个卡片均包含封面图、标题、播放量、弹幕数、时长、UP主等信息，例如'零基础Python爬虫逆向教程'、'3小时快速入门Python'等，内容高度符合预期。页面底部还有分页器（当前第1页，共34页），证明这是一个可翻页的完整结果列表。",
       "screenshot": "logs/test_9.1_1.png",
-      "script": "goto(\"https://search.bilibili.com/all?keyword=Python教程，返回前5个视频的标题\")\nwait_for_navigation()\nlog(\"B站搜索完成: Python教程，返回前5个视频的标题\")"
+      "script": "goto(\"https://search.bilibili.com/all?keyword=Python教程\")\nwait_for_navigation()\nlog(\"B站搜索完成: Python教程\")"
     },
     {
       "id": "10.1",
@@ -127,34 +115,11 @@
       "task": "在今日头条搜索人工智能，返回前5条新闻的标题",
       "status": "PASS",
       "attempts": 1,
-      "url": "https://so.toutiao.com/search?keyword=%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD%EF%BC%8C%E8%BF%94%E5%9B%9E%E5%89%8D5%E6%9D%A1%E6%96%B0%E9%97%BB%E7%9A%84%E6%A0%87%E9%A2%98",
-      "vision_reason": "页面正确显示了今日头条搜索结果，包含多条人工智能相关新闻",
-      "vision_details": {
-        "页面类型": "今日头条搜索结果页",
-        "搜索关键词": "人工智能",
-        "导航标签": [
-          "综合",
-          "视频",
-          "资讯",
-          "小视频",
-          "图片",
-          "音乐",
-          "用户",
-          "微头条"
-        ],
-        "搜索结果内容": [
-          "2025高考热点 | '人工智能'金句+标题+角度+人民日报时评+语段+范文",
-          "热点新闻事件#2026人工智能十大趋势#社会百态（视频）",
-          "您可能错过的大量人工智能新闻_哔哩哔哩-bilibili",
-          "2024年世界科技发展回顾·人工智能篇:技术日新月异，赋能千行百业",
-          "拥抱2026年AI新时代:智能变革引领未来生活",
-          "人工智能成两会热词:DeepSeek、机器狗、智能驾驶、AI问诊......"
-        ],
-        "附加功能": "页面包含'大家都在搜'和'相关搜索'板块，提供人工智能相关搜索建议",
-        "页面底部": "显示'头条搜索'标识，由今日头条提供搜索服务"
-      },
+      "url": "https://so.toutiao.com/search?keyword=%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD",
+      "vision_reason": "页面显示了今日头条的搜索结果页面，包含大量与“人工智能”相关的综合信息（词典、百科、技术文章、视频、相关搜索等），符合预期。",
+      "vision_details": "1. **页面结构**：顶部有今日头条搜索框，输入关键词为“人工智能”，下方有“综合”、“视频”、“资讯”等标签页，当前为“综合”标签页（红色高亮）。2. **内容验证**：\n   - 包含“人工智能-词典解析”模块，提供读音、释义和例句。\n   - 包含“人工智能（跨学科跨领域的融合学科）-百科”卡片，介绍定义及标签（发展历程、核心技术等）。\n   - 包含“人工智能-51CTO.COM”技术社区文章链接。\n   - 包含“大家都在搜”相关搜索词列表。\n   - 包含“人工智能简介”文章卡片（含发布时间）。\n   - 包含“人工智能-视频”模块，展示多个相关视频（如“什么是人工智能”“2026年人工智能十大趋势”等，含播放量和发布时间）。\n   - 包含“关于人工智能，我们了解多少”文章卡片（来源为“中国网信杂志”）。\n   - 包含“相关搜索”列表，提供更多衍生搜索词。\n3. **页面完整性**：页面无空白、错误提示或异常布局，所有预期内容（搜索结果、百科、文章、视频等）均已加载并清晰呈现。因此，页面完全符合“显示今日头条搜索结果，包含人工智能相关新闻（及多元相关信息）”的预期行为。",
       "screenshot": "logs/test_10.1_1.png",
-      "script": "goto(\"https://so.toutiao.com/search?keyword=人工智能，返回前5条新闻的标题\")\nwait_for_navigation()\nlog(\"今日头条搜索完成: 人工智能，返回前5条新闻的标题\")"
+      "script": "goto(\"https://so.toutiao.com/search?keyword=人工智能\")\nwait_for_navigation()\nlog(\"今日头条搜索完成: 人工智能\")"
     },
     {
       "id": "11.1",
@@ -162,11 +127,47 @@
       "task": "在CSDN搜索Python爬虫，返回前5篇文章的标题",
       "status": "PASS",
       "attempts": 1,
-      "url": "https://so.csdn.net/so/search?q=Python%E7%88%AC%E8%99%AB%EF%BC%8C%E8%BF%94%E5%9B%9E%E5%89%8D5%E7%AF%87%E6%96%87%E7%AB%A0%E7%9A%84%E6%A0%87%E9%A2%98",
-      "vision_reason": "页面正确显示CSDN搜索结果，包含Python爬虫技术文章。",
-      "vision_details": "截图显示CSDN网站的搜索结果页面，搜索关键词为'Python爬虫'。页面顶部有CSDN导航栏和搜索框，搜索框内已输入'Python爬虫'。下方是搜索结果列表，列出了多篇与Python爬虫相关的技术文章，如'用Python爬虫自己要抓的文章'、'基于Python的网络爬虫的毕业设计'、'Python爬虫入门基础及正则表达式抓取博客案例分享'等，文章标题和描述均涉及爬虫技术。页面布局正常，没有错误、空白或无关内容，完全符合预期行为。",
+      "url": "https://so.csdn.net/so/search?q=Python%E7%88%AC%E8%99%AB",
+      "vision_reason": "页面正确显示CSDN搜索结果，包含Python爬虫技术文章",
+      "vision_details": "截图显示CSDN网站的搜索结果页面，顶部搜索栏显示'Python爬虫'，主要内容区域列出了多篇与Python爬虫相关的技术文章，例如'一篇最全Python爬虫详细讲解（零基础入门，适合小白）'、'Python爬虫实战教程：Python6个小案例（附源码）'等，文章标题、描述和元数据清晰可见。页面右侧还有'相关搜索'和'搜索发现'部分，进一步提供Python爬虫相关关键词。整体页面布局符合CSDN搜索结果格式，无空白或错误提示，满足预期行为。",
       "screenshot": "logs/test_11.1_1.png",
-      "script": "goto(\"https://so.csdn.net/so/search?q=Python爬虫，返回前5篇文章的标题\")\nwait_for_navigation()\nlog(\"CSDN搜索完成: Python爬虫，返回前5篇文章的标题\")"
+      "script": "goto(\"https://so.csdn.net/so/search?q=Python爬虫\")\nwait_for_navigation()\nlog(\"CSDN搜索完成: Python爬虫\")"
+    },
+    {
+      "id": "13.1",
+      "site": "baike",
+      "task": "在百度百科查询人工智能，返回词条的简介",
+      "status": "PASS",
+      "attempts": 1,
+      "url": "https://baike.baidu.com/item/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD",
+      "vision_reason": "页面正确显示百度百科人工智能词条，包含简介内容",
+      "vision_details": "页面顶部有Baidu百科标志和搜索框（显示“人工智能”），主体部分标题为“人工智能”，并包含详细的简介文本（如人工智能的定义、研究领域等），同时页面有图片、目录（如“研究价值”、“科学介绍”等）和多个章节，符合百度百科词条的标准布局，内容完整且无错误。",
+      "screenshot": "logs/test_13.1_1.png",
+      "script": "goto(\"https://baike.baidu.com/item/人工智能\")\nwait_for_navigation()\nwait(3)\nlog(\"百度百科查询完成: 人工智能\")"
+    },
+    {
+      "id": "15.1",
+      "site": "weather",
+      "task": "查询北京今天的天气，返回温度和天气状况",
+      "status": "PASS",
+      "attempts": 1,
+      "url": "https://www.weather.com.cn/weather1d/101010100.shtml",
+      "vision_reason": "页面成功显示了北京天气信息，包含完整的温度、天气状况等内容",
+      "vision_details": "1. 页面顶部显示位置路径'全国 > 北京 > 城区'，确认为北京天气页面；2. 当前温度显示为28.2°C，配有温度计图标；3. 天气状况显示为'雷阵雨'，配有云朵闪电图标；4. 实时时间显示为11:50实况；5. 包含相对湿度(43%)、风向(南风3级)等详细信息；6. 未来天气预报显示22日白天31°C雷阵雨、夜间20°C雷阵雨；7. 包含逐小时温度曲线图；8. 页面还包含生活指数、周边地区天气、天气资讯、重大天气事件等丰富内容。所有预期元素均已正确显示。",
+      "screenshot": "logs/test_15.1_1.png",
+      "script": "goto(\"https://www.weather.com.cn/weather1d/101010100.shtml\")\nwait_for_navigation()\nwait(3)\nlog(\"天气查询完成\")"
+    },
+    {
+      "id": "16.1",
+      "site": "weibo",
+      "task": "打开微博热搜榜，返回前10条热搜话题",
+      "status": "PASS",
+      "attempts": 1,
+      "url": "https://s.weibo.com/top/summary",
+      "vision_reason": "页面成功显示微博热搜榜，包含热门话题列表",
+      "vision_details": "页面顶部显示微博导航栏，左侧有'微博热搜'标题及分类导航（如热搜、文娱、社会等），主体区域为热搜列表，包含序号、关键词（热门话题）、热度值和标签（如'热'、'新'、'官宣'），列表从1到50条，覆盖了预期的热门话题内容，无空白或错误信息。",
+      "screenshot": "logs/test_16.1_1.png",
+      "script": "goto(\"https://s.weibo.com/top/summary\")\nwait_for_navigation()\nwait(3)\ntext = get_text()\nlog(\"微博热搜加载完成\")\nprint(text[:2000])"
     }
   ]
 }
