@@ -197,6 +197,10 @@ class ScriptGenerator:
                     parameters={"engine": engine},
                 )
 
+        # 热搜任务
+        if any(kw in task_lower for kw in ["热搜", "hot", "trending"]):
+            return TaskIntent(action="hot_search")
+
         # 提取任务
         if any(kw in task_lower for kw in ["提取", "extract", "获取文本", "抓取", "爬取"]):
             return TaskIntent(action="extract")
@@ -244,6 +248,9 @@ class ScriptGenerator:
             engine = intent.parameters.get("engine", "baidu")
             return self._gen_search(intent.target, engine)
 
+        if intent.action == "hot_search":
+            return self._gen_hot_search()
+
         if intent.action == "extract":
             return self._gen_extract()
 
@@ -289,7 +296,7 @@ class ScriptGenerator:
             return f'goto("{cfg["url"]}{keyword}")\nwait_for_navigation()\nlog("{cfg["name"]}搜索完成: {keyword}")'
 
         # 某些网站需要用 JS 操作（headless 模式下元素可能被隐藏）
-        js_engines = ["baidu"]
+        js_engines = ["baidu", "dangdang", "douban", "wenku", "taobao", "jd", "pdd", "weibo"]
         if engine in js_engines:
             url = cfg["url"]
             inp = cfg["input"]
@@ -303,6 +310,17 @@ class ScriptGenerator:
                 f'log("{cfg["name"]}搜索完成: {keyword}")'
             )
 
+        # 某些网站需要用 URL 直接搜索（不需要填写表单）
+        url_search_engines_v2 = ["zhihu", "baike", "weather"]
+        if engine in url_search_engines_v2:
+            url = cfg["url"]
+            if engine == "zhihu":
+                return f'goto("https://www.zhihu.com/search?type=content&q={keyword}")\nwait_for_navigation()\nwait(3)\nlog("知乎搜索完成: {keyword}")'
+            elif engine == "baike":
+                return f'goto("https://baike.baidu.com/item/{keyword}")\nwait_for_navigation()\nwait(3)\nlog("百度百科查询完成: {keyword}")'
+            elif engine == "weather":
+                return f'goto("https://www.weather.com.cn/weather1d/101010100.shtml")\nwait_for_navigation()\nwait(3)\nlog("天气查询完成")'
+
         # 表单搜索（默认）
         return (
             f'goto("{cfg["url"]}")\n'
@@ -312,6 +330,9 @@ class ScriptGenerator:
             f'wait_for_navigation()\n'
             f'log("{cfg["name"]}搜索完成: {keyword}")'
         )
+
+    def _gen_hot_search(self) -> str:
+        return 'goto("https://s.weibo.com/top/summary")\nwait_for_navigation()\nwait(3)\ntext = get_text()\nlog("微博热搜加载完成")\nprint(text[:2000])'
 
     def _gen_extract(self) -> str:
         return '''text = get_text()
@@ -388,8 +409,10 @@ log("向上滚动")'''
             match = re.search(pattern, task, re.IGNORECASE)
             if match:
                 keyword = match.group(1).strip()
-                # 清理尾部
+                # 清理尾部：去掉标点和"返回..."部分
                 keyword = re.sub(r'[，。,.!?！？]$', '', keyword)
+                keyword = re.sub(r'[，,]\s*返回.*$', '', keyword)
+                keyword = re.sub(r'[，,]\s*并.*$', '', keyword)
                 if keyword:
                     return keyword
 
@@ -401,6 +424,8 @@ log("向上滚动")'''
             if task_lower_stripped.startswith(prefix):
                 keyword = task[len(prefix):].strip()
                 keyword = re.sub(r'[，。,.!?！？]$', '', keyword)
+                keyword = re.sub(r'[，,]\s*返回.*$', '', keyword)
+                keyword = re.sub(r'[，,]\s*并.*$', '', keyword)
                 if keyword:
                     return keyword
 
