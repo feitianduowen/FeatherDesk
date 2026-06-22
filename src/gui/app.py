@@ -636,11 +636,44 @@ def api_scripts():
 @app.route("/api/status")
 def api_status():
     """获取系统状态 API。"""
+    from src.config_manager import get_config_manager
     bm = get_browser_manager()
+    config = get_config_manager()
     return jsonify({
         "browser_running": bm.is_alive(),
         "engine": bm.engine if bm.is_alive() else None,
+        "configured": config.is_configured(),
+        "vision_provider": config.get("vision.provider", ""),
     })
+
+
+@app.route("/api/config", methods=["GET"])
+def api_get_config():
+    """获取配置 API。"""
+    from src.config_manager import get_config_manager
+    config = get_config_manager()
+    return jsonify({
+        "configured": config.is_configured(),
+        "vision": config.get_vision_config(),
+        "browser": config.get_browser_config(),
+    })
+
+
+@app.route("/api/config", methods=["POST"])
+def api_set_config():
+    """设置配置 API。"""
+    from src.config_manager import get_config_manager
+    config = get_config_manager()
+
+    data = request.json
+    if not data:
+        return jsonify({"success": False, "error": "No data provided"})
+
+    for key, value in data.items():
+        config.set(key, value)
+
+    config.apply_to_env()
+    return jsonify({"success": True})
 
 
 def main():

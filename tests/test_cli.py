@@ -146,15 +146,17 @@ class TestServeCommand:
         assert "transport" in result.output.lower()
         assert "stdio" in result.output.lower()
 
+    @patch("src.cli._load_config")
     @patch("src.server.mcp")
-    def test_stdio_default(self, mock_mcp, runner: CliRunner):
+    def test_stdio_default(self, mock_mcp, mock_config, runner: CliRunner):
         """Default transport is stdio."""
         result = runner.invoke(main, ["serve"])
         assert result.exit_code == 0
         mock_mcp.run.assert_called_once_with(transport="stdio")
 
+    @patch("src.cli._load_config")
     @patch("src.server.mcp")
-    def test_sse_transport(self, mock_mcp, runner: CliRunner):
+    def test_sse_transport(self, mock_mcp, mock_config, runner: CliRunner):
         """SSE transport passes host and port."""
         result = runner.invoke(main, ["serve", "--transport", "sse", "--host", "0.0.0.0", "--port", "9000"])
         assert result.exit_code == 0
@@ -165,15 +167,17 @@ class TestServeCommand:
         assert result.exit_code != 0
         assert "invalid" in result.output.lower() or "choice" in result.output.lower()
 
+    @patch("src.cli._load_config")
     @patch("src.server.mcp")
-    def test_debug_enables_logging(self, mock_mcp, runner: CliRunner):
+    def test_debug_enables_logging(self, mock_mcp, mock_config, runner: CliRunner):
         """--debug flag sets up logging."""
         with patch("logging.basicConfig") as mock_logging:
             result = runner.invoke(main, ["serve", "--debug"])
         assert result.exit_code == 0
 
+    @patch("src.cli._load_config")
     @patch("src.server.mcp")
-    def test_stdio_sets_no_color(self, mock_mcp, runner: CliRunner):
+    def test_stdio_sets_no_color(self, mock_mcp, mock_config, runner: CliRunner):
         """stdio transport sets NO_COLOR=1 to avoid garbled output."""
         env = os.environ.copy()
         env.pop("NO_COLOR", None)
@@ -200,9 +204,10 @@ class TestRunCommand:
         result = runner.invoke(main, ["run"])
         assert result.exit_code != 0
 
+    @patch("src.cli._load_config")
     @patch("src.core.agent_loop.run_task")
     @patch("src.core.browser_manager.get_browser_manager")
-    def test_success(self, mock_get_bm, mock_run_task, runner: CliRunner):
+    def test_success(self, mock_get_bm, mock_run_task, mock_config, runner: CliRunner):
         """Happy path: browser launches, task runs, prints result."""
         from src.core.agent_loop import AgentTaskResult, AgentStep, AgentState
 
@@ -266,9 +271,10 @@ class TestRunCommand:
             result = runner.invoke(main, ["run", "explode"])
         assert result.exit_code == 1
 
+    @patch("src.cli._load_config")
     @patch("src.core.agent_loop.run_task")
     @patch("src.core.browser_manager.get_browser_manager")
-    def test_custom_max_steps(self, mock_get_bm, mock_run_task, runner: CliRunner):
+    def test_custom_max_steps(self, mock_get_bm, mock_run_task, mock_config, runner: CliRunner):
         """--max-steps is forwarded to run_task."""
         from src.core.agent_loop import AgentTaskResult
 
@@ -283,9 +289,10 @@ class TestRunCommand:
         runner.invoke(main, ["run", "--max-steps", "5", "test task"])
         mock_run_task.assert_called_once_with("test task", max_steps=5)
 
+    @patch("src.cli._load_config")
     @patch("src.core.agent_loop.run_task")
     @patch("src.core.browser_manager.get_browser_manager")
-    def test_headed_flag(self, mock_get_bm, mock_run_task, runner: CliRunner):
+    def test_headed_flag(self, mock_get_bm, mock_run_task, mock_config, runner: CliRunner):
         """--headed passes headless=False to browser manager."""
         from src.core.agent_loop import AgentTaskResult
 
@@ -300,9 +307,10 @@ class TestRunCommand:
         runner.invoke(main, ["run", "--headed", "test task"])
         bm.launch.assert_called_once_with(headless=False, slow_mo=0)
 
+    @patch("src.cli._load_config")
     @patch("src.core.agent_loop.run_task")
     @patch("src.core.browser_manager.get_browser_manager")
-    def test_slow_mo(self, mock_get_bm, mock_run_task, runner: CliRunner):
+    def test_slow_mo(self, mock_get_bm, mock_run_task, mock_config, runner: CliRunner):
         """--slow-mo is forwarded to browser launch."""
         from src.core.agent_loop import AgentTaskResult
 

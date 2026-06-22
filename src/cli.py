@@ -56,6 +56,25 @@ def _warn_mark(ok: bool) -> str:
     return "[OK]" if ok else "[WARN]"
 
 
+def _load_config() -> None:
+    """加载配置文件，首次运行时引导配置。"""
+    from src.config_manager import get_config_manager
+
+    config = get_config_manager()
+
+    if not config.is_configured():
+        click.echo("首次运行，需要配置 API Key。")
+        config.setup_interactive()
+
+    # 应用配置到环境变量
+    config.apply_to_env()
+
+    # 加载 .env（优先级更高，可覆盖 config.yaml）
+    if _ENV_FILE.is_file():
+        from dotenv import load_dotenv
+        load_dotenv(_ENV_FILE, override=False)
+
+
 # ---------------------------------------------------------------------------
 # CLI root
 # ---------------------------------------------------------------------------
@@ -105,10 +124,8 @@ def serve(transport: str, host: str, port: int, debug: bool) -> None:
     By default uses stdio transport (for Claude Desktop / CLI integration).
     Use --transport sse or --transport streamable-http for network modes.
     """
-    # Load .env early so config is available
-    if _ENV_FILE.is_file():
-        from dotenv import load_dotenv
-        load_dotenv(_ENV_FILE, override=False)
+    # Load config
+    _load_config()
 
     if debug:
         os.environ["LOG_LEVEL"] = "DEBUG"
@@ -169,10 +186,8 @@ def run(task: str, max_steps: int, headless: bool, slow_mo: int) -> None:
 
         agentic-playwright-mcp run --headed --slow-mo 500 "search Python docs on baidu"
     """
-    # Load .env
-    if _ENV_FILE.is_file():
-        from dotenv import load_dotenv
-        load_dotenv(_ENV_FILE, override=False)
+    # Load config
+    _load_config()
 
     from src.core.browser_manager import get_browser_manager
 
@@ -443,6 +458,25 @@ def _check_playwright_browsers() -> bool:
         return len(chromium_dirs) > 0
 
     return False
+
+
+# ---------------------------------------------------------------------------
+# setup
+# ---------------------------------------------------------------------------
+
+
+@main.command()
+def setup() -> None:
+    """Interactive setup wizard for first-time configuration.
+
+    Prompts for API key, browser engine, and other settings.
+    Saves to ~/.agentic-playwright/config.yaml.
+    """
+    from src.config_manager import get_config_manager, reset_config_manager
+
+    reset_config_manager()
+    config = get_config_manager()
+    config.setup_interactive()
 
 
 # ---------------------------------------------------------------------------
