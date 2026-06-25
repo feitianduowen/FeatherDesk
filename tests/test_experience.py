@@ -7,8 +7,6 @@ import pytest
 from src.core.experience import (
     ExperienceManager,
     SelectorExperience,
-    ScriptRecord,
-    SiteKnowledge,
     get_experience_manager,
     reset_experience_manager,
 )

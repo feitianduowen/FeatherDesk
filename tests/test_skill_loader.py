@@ -16,7 +16,6 @@ from src.layer_2.skill_loader import (
 )
 from src.layer_2.skill_schema import SkillConfig, SkillType
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
@@ -52,9 +51,7 @@ def sample_skill_data():
 def skill_yaml_file(tmp_path, sample_skill_data):
     """Write a single skill YAML file and return its path."""
     path = tmp_path / "baidu_search.yaml"
-    path.write_text(
-        yaml.dump(sample_skill_data, allow_unicode=True), encoding="utf-8"
-    )
+    path.write_text(yaml.dump(sample_skill_data, allow_unicode=True), encoding="utf-8")
     return path
 
 
@@ -251,9 +248,7 @@ class TestSkillYamlRegistryLookup:
 class TestSkillYamlRegistrySearchQuery:
     def test_match_trigger(self):
         reg = SkillYamlRegistry()
-        reg.register(
-            SkillConfig(id="test", name="Test", triggers=["百度", "search"])
-        )
+        reg.register(SkillConfig(id="test", name="Test", triggers=["百度", "search"]))
         results = reg.search(query="百度一下")
         assert len(results) == 1
         assert results[0].id == "test"
@@ -267,7 +262,9 @@ class TestSkillYamlRegistrySearchQuery:
     def test_match_description(self):
         reg = SkillYamlRegistry()
         reg.register(
-            SkillConfig(id="test", name="X", triggers=[], description="这是一个搜索技能")
+            SkillConfig(
+                id="test", name="X", triggers=[], description="这是一个搜索技能"
+            )
         )
         results = reg.search(query="搜索")
         assert len(results) == 1
@@ -287,17 +284,13 @@ class TestSkillYamlRegistrySearchQuery:
 class TestSkillYamlRegistrySearchUrl:
     def test_match_url(self):
         reg = SkillYamlRegistry()
-        reg.register(
-            SkillConfig(id="test", name="Test", url_patterns=["*.baidu.com"])
-        )
+        reg.register(SkillConfig(id="test", name="Test", url_patterns=["*.baidu.com"]))
         results = reg.search(url="https://www.baidu.com/s")
         assert len(results) == 1
 
     def test_no_url_match(self):
         reg = SkillYamlRegistry()
-        reg.register(
-            SkillConfig(id="test", name="Test", url_patterns=["*.baidu.com"])
-        )
+        reg.register(SkillConfig(id="test", name="Test", url_patterns=["*.baidu.com"]))
         results = reg.search(url="https://google.com")
         assert len(results) == 0
 

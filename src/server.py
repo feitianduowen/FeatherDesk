@@ -109,6 +109,7 @@ def screenshot(path: str) -> str:
 
     try:
         from src.layer_1.actions import do_screenshot
+
         saved = do_screenshot(page, path)
         return f"Screenshot saved: {saved}"
     except Exception as exc:
@@ -271,6 +272,7 @@ def analyze_page(question: str = "") -> str:
 
     try:
         from src.core.vision import get_vision_module
+
         vision = get_vision_module()
     except ValueError as exc:
         return f"Vision module error: {exc}"
@@ -331,6 +333,7 @@ def run_task(task: str, max_steps: int = 10) -> str:
 
     try:
         from src.core.agent_loop import run_task as _run_task
+
         result = _run_task(task, max_steps=max_steps)
     except Exception as exc:
         return f"Agent loop error: {exc}"
@@ -345,7 +348,9 @@ def run_task(task: str, max_steps: int = 10) -> str:
         parts.append("\nExecution steps:")
         for step in result.steps:
             status = "✓" if step.success else "✗"
-            parts.append(f"  {status} Step {step.step_number} [{step.state}]: {step.result}")
+            parts.append(
+                f"  {status} Step {step.step_number} [{step.state}]: {step.result}"
+            )
 
     if result.output:
         parts.append(f"\nOutput:\n{result.output}")

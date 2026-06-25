@@ -22,16 +22,16 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from src.core.browser_manager import get_browser_manager, reset_browser_manager
 from src.layer_2.controls import (
+    get_page_title,
     goto,
+    screenshot,
     smart_click,
     smart_fill,
-    smart_search,
     smart_fill_form,
+    smart_search,
     wait_for_navigation,
-    get_page_title,
-    screenshot,
 )
-from src.layer_3.domain_loader import load_domain, get_element_selectors
+from src.layer_3.domain_loader import get_element_selectors, load_domain
 
 
 def demo_domain_loading():

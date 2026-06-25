@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from src.core.script_generator import ScriptGenerator, TaskIntent
+from src.core.script_generator import ScriptGenerator
 
 
 @pytest.fixture

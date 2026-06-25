@@ -117,7 +117,9 @@ class ExperienceManager:
     # 脚本管理
     # -------------------------------------------------------------------
 
-    def save_script(self, task: str, script: str, site: str = "", tags: list[str] | None = None) -> ScriptRecord:
+    def save_script(
+        self, task: str, script: str, site: str = "", tags: list[str] | None = None
+    ) -> ScriptRecord:
         """保存成功执行的脚本。"""
         script_id = self._generate_id(task)
 
@@ -205,7 +207,8 @@ class ExperienceManager:
     def get_best_selectors(self, site: str, element: str) -> list[str]:
         """获取按可靠性排序的选择器列表。"""
         experiences = [
-            exp for exp in self._selector_cache.values()
+            exp
+            for exp in self._selector_cache.values()
             if exp.site == site and exp.element == element
         ]
         experiences.sort(key=lambda e: e.reliability, reverse=True)
@@ -283,10 +286,7 @@ class ExperienceManager:
                 pass
 
     def _save_selector_experience(self, site: str) -> None:
-        site_exps = [
-            exp for exp in self._selector_cache.values()
-            if exp.site == site
-        ]
+        site_exps = [exp for exp in self._selector_cache.values() if exp.site == site]
         path = self._selectors_dir / f"{site}.json"
         data = {
             "site": site,
@@ -335,7 +335,9 @@ class ExperienceManager:
 _instance: ExperienceManager | None = None
 
 
-def get_experience_manager(workspace_dir: str | Path | None = None) -> ExperienceManager:
+def get_experience_manager(
+    workspace_dir: str | Path | None = None,
+) -> ExperienceManager:
     global _instance
     if _instance is None:
         _instance = ExperienceManager(workspace_dir=workspace_dir)

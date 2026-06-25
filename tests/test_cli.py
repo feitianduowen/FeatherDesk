@@ -10,15 +10,20 @@ from __future__ import annotations
 import importlib.metadata
 import os
 import subprocess
-import sys
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
 from click.testing import CliRunner
 
-from src.cli import main, doctor, serve, run, _version, _get_package_version, _check_mark, _warn_mark, _check_playwright_browsers
-
+from src.cli import (
+    _check_mark,
+    _check_playwright_browsers,
+    _get_package_version,
+    _version,
+    _warn_mark,
+    main,
+)
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -43,7 +48,10 @@ class TestVersionHelper:
 
     def test_falls_back_to_dev(self):
         """When the package is NOT installed, returns dev fallback."""
-        with patch("importlib.metadata.version", side_effect=importlib.metadata.PackageNotFoundError):
+        with patch(
+            "importlib.metadata.version",
+            side_effect=importlib.metadata.PackageNotFoundError,
+        ):
             assert _version() == "0.1.0 (dev)"
 
 
@@ -53,7 +61,10 @@ class TestGetPackageVersion:
             assert _get_package_version("pi") == "3.14"
 
     def test_unknown_package(self):
-        with patch("importlib.metadata.version", side_effect=importlib.metadata.PackageNotFoundError):
+        with patch(
+            "importlib.metadata.version",
+            side_effect=importlib.metadata.PackageNotFoundError,
+        ):
             assert _get_package_version("nope") == "?"
 
 
@@ -92,21 +103,30 @@ class TestCheckPlaywrightBrowsers:
         mock_result = MagicMock()
         mock_result.stdout = "Browsers: firefox-1234\n"
         mock_result.stderr = ""
-        with patch("subprocess.run", return_value=mock_result), \
-             patch.object(Path, "is_dir", return_value=False):
+        with (
+            patch("subprocess.run", return_value=mock_result),
+            patch.object(Path, "is_dir", return_value=False),
+        ):
             assert _check_playwright_browsers() is False
 
     def test_dry_run_timeout_falls_back_to_cache(self):
         """On subprocess timeout, falls back to checking cache directory."""
-        with patch("subprocess.run", side_effect=subprocess.TimeoutExpired(cmd="playwright", timeout=10)), \
-             patch.object(Path, "is_dir", return_value=True), \
-             patch.object(Path, "glob", return_value=["chromium-1234"]):
+        with (
+            patch(
+                "subprocess.run",
+                side_effect=subprocess.TimeoutExpired(cmd="playwright", timeout=10),
+            ),
+            patch.object(Path, "is_dir", return_value=True),
+            patch.object(Path, "glob", return_value=["chromium-1234"]),
+        ):
             assert _check_playwright_browsers() is True
 
     def test_dry_run_file_not_found_falls_back(self):
         """When playwright is not installed, falls back to cache check."""
-        with patch("subprocess.run", side_effect=FileNotFoundError), \
-             patch.object(Path, "is_dir", return_value=False):
+        with (
+            patch("subprocess.run", side_effect=FileNotFoundError),
+            patch.object(Path, "is_dir", return_value=False),
+        ):
             assert _check_playwright_browsers() is False
 
 
@@ -119,7 +139,10 @@ class TestMainGroup:
     def test_help(self, runner: CliRunner):
         result = runner.invoke(main, ["--help"])
         assert result.exit_code == 0
-        assert "browser automation" in result.output.lower() or "mcp" in result.output.lower()
+        assert (
+            "browser automation" in result.output.lower()
+            or "mcp" in result.output.lower()
+        )
 
     def test_version(self, runner: CliRunner):
         result = runner.invoke(main, ["--version"])
@@ -158,7 +181,9 @@ class TestServeCommand:
     @patch("src.server.mcp")
     def test_sse_transport(self, mock_mcp, mock_config, runner: CliRunner):
         """SSE transport passes host and port."""
-        result = runner.invoke(main, ["serve", "--transport", "sse", "--host", "0.0.0.0", "--port", "9000"])
+        result = runner.invoke(
+            main, ["serve", "--transport", "sse", "--host", "0.0.0.0", "--port", "9000"]
+        )
         assert result.exit_code == 0
         mock_mcp.run.assert_called_once_with(transport="sse", host="0.0.0.0", port=9000)
 
@@ -171,7 +196,7 @@ class TestServeCommand:
     @patch("src.server.mcp")
     def test_debug_enables_logging(self, mock_mcp, mock_config, runner: CliRunner):
         """--debug flag sets up logging."""
-        with patch("logging.basicConfig") as mock_logging:
+        with patch("logging.basicConfig"):
             result = runner.invoke(main, ["serve", "--debug"])
         assert result.exit_code == 0
 
@@ -209,7 +234,7 @@ class TestRunCommand:
     @patch("src.core.browser_manager.get_browser_manager")
     def test_success(self, mock_get_bm, mock_run_task, mock_config, runner: CliRunner):
         """Happy path: browser launches, task runs, prints result."""
-        from src.core.agent_loop import AgentTaskResult, AgentStep, AgentState
+        from src.core.agent_loop import AgentState, AgentStep, AgentTaskResult
 
         bm = MagicMock()
         bm.engine = "playwright"
@@ -219,7 +244,12 @@ class TestRunCommand:
             success=True,
             task="open example.com",
             steps=[
-                AgentStep(step_number=1, state=AgentState.ACT, result="navigated", success=True),
+                AgentStep(
+                    step_number=1,
+                    state=AgentState.ACT,
+                    result="navigated",
+                    success=True,
+                ),
             ],
             final_url="https://example.com",
             output="Page loaded",
@@ -274,7 +304,9 @@ class TestRunCommand:
     @patch("src.cli._load_config")
     @patch("src.core.agent_loop.run_task")
     @patch("src.core.browser_manager.get_browser_manager")
-    def test_custom_max_steps(self, mock_get_bm, mock_run_task, mock_config, runner: CliRunner):
+    def test_custom_max_steps(
+        self, mock_get_bm, mock_run_task, mock_config, runner: CliRunner
+    ):
         """--max-steps is forwarded to run_task."""
         from src.core.agent_loop import AgentTaskResult
 
@@ -292,7 +324,9 @@ class TestRunCommand:
     @patch("src.cli._load_config")
     @patch("src.core.agent_loop.run_task")
     @patch("src.core.browser_manager.get_browser_manager")
-    def test_headed_flag(self, mock_get_bm, mock_run_task, mock_config, runner: CliRunner):
+    def test_headed_flag(
+        self, mock_get_bm, mock_run_task, mock_config, runner: CliRunner
+    ):
         """--headed passes headless=False to browser manager."""
         from src.core.agent_loop import AgentTaskResult
 
@@ -339,67 +373,78 @@ class TestDoctorCommand:
 
     def test_all_pass(self, runner: CliRunner):
         """When everything is healthy, exits 0."""
-        with patch("src.cli._check_playwright_browsers", return_value=True), \
-             patch("importlib.import_module"), \
-             patch("src.cli._get_package_version", return_value="1.0.0"), \
-             patch.object(Path, "is_file", return_value=True), \
-             patch.object(Path, "is_dir", return_value=True), \
-             patch.object(Path, "glob", return_value=[Path("example.yaml")]), \
-             patch.dict(os.environ, {"ANTHROPIC_API_KEY": "sk-test"}):
+        with (
+            patch("src.cli._check_playwright_browsers", return_value=True),
+            patch("importlib.import_module"),
+            patch("src.cli._get_package_version", return_value="1.0.0"),
+            patch.object(Path, "is_file", return_value=True),
+            patch.object(Path, "is_dir", return_value=True),
+            patch.object(Path, "glob", return_value=[Path("example.yaml")]),
+            patch.dict(os.environ, {"ANTHROPIC_API_KEY": "sk-test"}),
+        ):
             result = runner.invoke(main, ["doctor"])
         assert result.exit_code == 0
         assert "passed" in result.output.lower() or "ready" in result.output.lower()
 
     def test_missing_dependency(self, runner: CliRunner):
         """Missing a core dependency causes exit 1."""
+
         def fake_import(name):
             if name == "playwright":
                 raise ImportError("no module")
             return MagicMock()
 
-        with patch("src.cli._check_playwright_browsers", return_value=True), \
-             patch("importlib.import_module", side_effect=fake_import), \
-             patch("src.cli._get_package_version", return_value="1.0.0"), \
-             patch.object(Path, "is_file", return_value=False), \
-             patch.object(Path, "is_dir", return_value=True), \
-             patch.object(Path, "glob", return_value=[Path("example.yaml")]):
+        with (
+            patch("src.cli._check_playwright_browsers", return_value=True),
+            patch("importlib.import_module", side_effect=fake_import),
+            patch("src.cli._get_package_version", return_value="1.0.0"),
+            patch.object(Path, "is_file", return_value=False),
+            patch.object(Path, "is_dir", return_value=True),
+            patch.object(Path, "glob", return_value=[Path("example.yaml")]),
+        ):
             result = runner.invoke(main, ["doctor"])
         assert result.exit_code == 1
         assert "critical" in result.output.lower()
 
     def test_no_domains_warns(self, runner: CliRunner):
         """Empty domains/ produces a warning but not an error."""
-        with patch("src.cli._check_playwright_browsers", return_value=True), \
-             patch("importlib.import_module"), \
-             patch("src.cli._get_package_version", return_value="1.0.0"), \
-             patch.object(Path, "is_file", return_value=False), \
-             patch.object(Path, "is_dir", return_value=True), \
-             patch.object(Path, "glob", return_value=[]):
+        with (
+            patch("src.cli._check_playwright_browsers", return_value=True),
+            patch("importlib.import_module"),
+            patch("src.cli._get_package_version", return_value="1.0.0"),
+            patch.object(Path, "is_file", return_value=False),
+            patch.object(Path, "is_dir", return_value=True),
+            patch.object(Path, "glob", return_value=[]),
+        ):
             result = runner.invoke(main, ["doctor"])
         # Should still exit 0 (warnings are non-fatal)
         assert result.exit_code == 0
 
     def test_no_env_warns(self, runner: CliRunner):
         """Missing .env file produces a warning."""
-        with patch("src.cli._check_playwright_browsers", return_value=True), \
-             patch("importlib.import_module"), \
-             patch("src.cli._get_package_version", return_value="1.0.0"), \
-             patch.object(Path, "is_file", return_value=False), \
-             patch.object(Path, "is_dir", return_value=True), \
-             patch.object(Path, "glob", return_value=[Path("example.yaml")]):
+        with (
+            patch("src.cli._check_playwright_browsers", return_value=True),
+            patch("importlib.import_module"),
+            patch("src.cli._get_package_version", return_value="1.0.0"),
+            patch.object(Path, "is_file", return_value=False),
+            patch.object(Path, "is_dir", return_value=True),
+            patch.object(Path, "glob", return_value=[Path("example.yaml")]),
+        ):
             result = runner.invoke(main, ["doctor"])
         assert result.exit_code == 0
         assert "warning" in result.output.lower() or "warn" in result.output.lower()
 
     def test_fix_attempts_browser_install(self, runner: CliRunner):
         """--fix flag attempts to install playwright browsers."""
-        with patch("src.cli._check_playwright_browsers", return_value=False), \
-             patch("importlib.import_module"), \
-             patch("src.cli._get_package_version", return_value="1.0.0"), \
-             patch.object(Path, "is_file", return_value=False), \
-             patch.object(Path, "is_dir", return_value=True), \
-             patch.object(Path, "glob", return_value=[Path("example.yaml")]), \
-             patch("subprocess.run") as mock_subproc:
+        with (
+            patch("src.cli._check_playwright_browsers", return_value=False),
+            patch("importlib.import_module"),
+            patch("src.cli._get_package_version", return_value="1.0.0"),
+            patch.object(Path, "is_file", return_value=False),
+            patch.object(Path, "is_dir", return_value=True),
+            patch.object(Path, "glob", return_value=[Path("example.yaml")]),
+            patch("subprocess.run") as mock_subproc,
+        ):
             mock_subproc.return_value = MagicMock()
             result = runner.invoke(main, ["doctor", "--fix"])
         # Should have attempted to install chromium
@@ -410,6 +455,7 @@ class TestDoctorCommand:
     def test_cloakbrowser_enabled_missing(self, runner: CliRunner):
         """USE_CLOAKBROWSER=true without the package causes an error."""
         import builtins
+
         real_import = builtins.__import__
 
         def fake_import(name, *args, **kwargs):
@@ -417,25 +463,29 @@ class TestDoctorCommand:
                 raise ImportError("no cloakbrowser")
             return real_import(name, *args, **kwargs)
 
-        with patch("src.cli._check_playwright_browsers", return_value=True), \
-             patch("builtins.__import__", side_effect=fake_import), \
-             patch("src.cli._get_package_version", return_value="1.0.0"), \
-             patch.object(Path, "is_file", return_value=False), \
-             patch.object(Path, "is_dir", return_value=True), \
-             patch.object(Path, "glob", return_value=[Path("example.yaml")]), \
-             patch.dict(os.environ, {"USE_CLOAKBROWSER": "true"}):
+        with (
+            patch("src.cli._check_playwright_browsers", return_value=True),
+            patch("builtins.__import__", side_effect=fake_import),
+            patch("src.cli._get_package_version", return_value="1.0.0"),
+            patch.object(Path, "is_file", return_value=False),
+            patch.object(Path, "is_dir", return_value=True),
+            patch.object(Path, "glob", return_value=[Path("example.yaml")]),
+            patch.dict(os.environ, {"USE_CLOAKBROWSER": "true"}),
+        ):
             result = runner.invoke(main, ["doctor"])
         assert result.exit_code == 1
 
     def test_cloakbrowser_enabled_present(self, runner: CliRunner):
         """USE_CLOAKBROWSER=true with the package installed is OK."""
-        with patch("src.cli._check_playwright_browsers", return_value=True), \
-             patch("importlib.import_module"), \
-             patch("src.cli._get_package_version", return_value="1.0.0"), \
-             patch.object(Path, "is_file", return_value=False), \
-             patch.object(Path, "is_dir", return_value=True), \
-             patch.object(Path, "glob", return_value=[Path("example.yaml")]), \
-             patch.dict(os.environ, {"USE_CLOAKBROWSER": "true"}):
+        with (
+            patch("src.cli._check_playwright_browsers", return_value=True),
+            patch("importlib.import_module"),
+            patch("src.cli._get_package_version", return_value="1.0.0"),
+            patch.object(Path, "is_file", return_value=False),
+            patch.object(Path, "is_dir", return_value=True),
+            patch.object(Path, "glob", return_value=[Path("example.yaml")]),
+            patch.dict(os.environ, {"USE_CLOAKBROWSER": "true"}),
+        ):
             result = runner.invoke(main, ["doctor"])
         # Should not fail on cloakbrowser
         assert "cloakbrowser" in result.output.lower()

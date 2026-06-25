@@ -30,7 +30,6 @@ from src.core.event_bus import (
     reset_event_bus,
 )
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
@@ -181,7 +180,7 @@ class TestRegistration:
 
     def test_register_imperative(self, bus: EventBus):
         calls = []
-        cb = bus.register("my_event", lambda e: calls.append(e), phase="after")
+        bus.register("my_event", lambda e: calls.append(e), phase="after")
         assert bus.hook_count("my_event") == 1
         bus.emit(Event(name="my_event", phase=Phase.AFTER))
         assert len(calls) == 1
@@ -317,7 +316,9 @@ class TestDispatch:
             event.data["url"] = "https://modified.com"
 
         bus.register("navigate", rewrite, phase="before")
-        event = Event(name="navigate", phase=Phase.BEFORE, data={"url": "https://original.com"})
+        event = Event(
+            name="navigate", phase=Phase.BEFORE, data={"url": "https://original.com"}
+        )
         bus.emit(event)
         assert event.data["url"] == "https://modified.com"
 

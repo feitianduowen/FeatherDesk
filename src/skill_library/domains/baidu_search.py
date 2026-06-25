@@ -14,8 +14,8 @@ def run(keyword: str):
         4. 等待搜索结果加载
     """
     goto("https://www.baidu.com")
-    fill("#kw", keyword)           # L1 选择器: #kw → input[name='wd'] → .s_ipt
-    click("#su")                   # L1 选择器: #su → input[type='submit'] → .btn-search
+    fill("#kw", keyword)  # L1 选择器: #kw → input[name='wd'] → .s_ipt
+    click("#su")  # L1 选择器: #su → input[type='submit'] → .btn-search
     wait_for_navigation()
     log(f"百度搜索完成: {keyword}")
 

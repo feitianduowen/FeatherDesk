@@ -547,24 +547,28 @@ def api_run():
         # 关闭浏览器
         bm.close()
 
-        return jsonify({
-            "success": result.success,
-            "task": result.task,
-            "steps": [
-                {
-                    "step_number": s.step_number,
-                    "state": s.state.value if hasattr(s.state, "value") else str(s.state),
-                    "action": s.action,
-                    "result": s.result,
-                    "success": s.success,
-                    "error": s.error,
-                }
-                for s in result.steps
-            ],
-            "output": result.output,
-            "final_url": final_url,
-            "error": result.error,
-        })
+        return jsonify(
+            {
+                "success": result.success,
+                "task": result.task,
+                "steps": [
+                    {
+                        "step_number": s.step_number,
+                        "state": s.state.value
+                        if hasattr(s.state, "value")
+                        else str(s.state),
+                        "action": s.action,
+                        "result": s.result,
+                        "success": s.success,
+                        "error": s.error,
+                    }
+                    for s in result.steps
+                ],
+                "output": result.output,
+                "final_url": final_url,
+                "error": result.error,
+            }
+        )
 
     except Exception as exc:
         # 尝试清理浏览器
@@ -572,33 +576,38 @@ def api_run():
             reset_browser_manager()
         except Exception:
             pass
-        return jsonify({
-            "success": False,
-            "error": f"{type(exc).__name__}: {exc}",
-        })
+        return jsonify(
+            {
+                "success": False,
+                "error": f"{type(exc).__name__}: {exc}",
+            }
+        )
 
 
 @app.route("/api/skills")
 def api_skills():
     """获取技能列表 API。"""
     from src.skill_library.registry import reset_skill_registry
+
     try:
         reset_skill_registry()
         library_dir = str(_project_root / "src" / "skill_library")
         registry = get_skill_registry(library_dir=library_dir)
         skills = registry.list_all()
 
-        return jsonify([
-            {
-                "id": s.id,
-                "name": s.name,
-                "type": s.type,
-                "triggers": s.triggers,
-                "url_patterns": s.url_patterns,
-                "description": s.description,
-            }
-            for s in skills
-        ])
+        return jsonify(
+            [
+                {
+                    "id": s.id,
+                    "name": s.name,
+                    "type": s.type,
+                    "triggers": s.triggers,
+                    "url_patterns": s.url_patterns,
+                    "description": s.description,
+                }
+                for s in skills
+            ]
+        )
 
     except Exception:
         return jsonify([])
@@ -611,19 +620,21 @@ def api_scripts():
         store = get_script_store()
         scripts = store.list_all()
 
-        return jsonify([
-            {
-                "id": s.id,
-                "task": s.task,
-                "script": s.script,
-                "use_count": s.use_count,
-                "success_count": s.success_count,
-                "success_rate": s.success_rate,
-                "created_at": s.created_at,
-                "last_used_at": s.last_used_at,
-            }
-            for s in scripts
-        ])
+        return jsonify(
+            [
+                {
+                    "id": s.id,
+                    "task": s.task,
+                    "script": s.script,
+                    "use_count": s.use_count,
+                    "success_count": s.success_count,
+                    "success_rate": s.success_rate,
+                    "created_at": s.created_at,
+                    "last_used_at": s.last_used_at,
+                }
+                for s in scripts
+            ]
+        )
 
     except Exception:
         return jsonify([])
@@ -633,32 +644,39 @@ def api_scripts():
 def api_status():
     """获取系统状态 API。"""
     from src.config_manager import get_config_manager
+
     bm = get_browser_manager()
     config = get_config_manager()
-    return jsonify({
-        "browser_running": bm.is_alive(),
-        "engine": bm.engine if bm.is_alive() else None,
-        "configured": config.is_configured(),
-        "vision_provider": config.get("vision.provider", ""),
-    })
+    return jsonify(
+        {
+            "browser_running": bm.is_alive(),
+            "engine": bm.engine if bm.is_alive() else None,
+            "configured": config.is_configured(),
+            "vision_provider": config.get("vision.provider", ""),
+        }
+    )
 
 
 @app.route("/api/config", methods=["GET"])
 def api_get_config():
     """获取配置 API。"""
     from src.config_manager import get_config_manager
+
     config = get_config_manager()
-    return jsonify({
-        "configured": config.is_configured(),
-        "vision": config.get_vision_config(),
-        "browser": config.get_browser_config(),
-    })
+    return jsonify(
+        {
+            "configured": config.is_configured(),
+            "vision": config.get_vision_config(),
+            "browser": config.get_browser_config(),
+        }
+    )
 
 
 @app.route("/api/config", methods=["POST"])
 def api_set_config():
     """设置配置 API。"""
     from src.config_manager import get_config_manager
+
     config = get_config_manager()
 
     data = request.json

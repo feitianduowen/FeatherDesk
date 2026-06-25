@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from unittest.mock import MagicMock, patch, PropertyMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -13,7 +13,6 @@ from src.core.agent_loop import (
     AgentTaskResult,
     run_task,
 )
-
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -38,7 +37,7 @@ def mock_browser():
 def mock_vision():
     """Mock VisionModule."""
     with patch("src.core.agent_loop.get_vision_module") as mock_get:
-        from src.core.vision import PageAnalysis, ElementInfo
+        from src.core.vision import ElementInfo, PageAnalysis
 
         vision = MagicMock()
         vision.analyze_page.return_value = PageAnalysis(
@@ -46,7 +45,8 @@ def mock_vision():
             elements=[
                 ElementInfo(
                     description="搜索按钮",
-                    x=100, y=200,
+                    x=100,
+                    y=200,
                     suggested_selector="#btn",
                     confidence=0.9,
                 ),
@@ -64,9 +64,7 @@ def mock_script_engine():
         from src.core.script_engine import ScriptResult
 
         engine = MagicMock()
-        engine.execute.return_value = ScriptResult(
-            success=True, output="done\n"
-        )
+        engine.execute.return_value = ScriptResult(success=True, output="done\n")
         mock_get.return_value = engine
         yield engine
 
@@ -87,8 +85,11 @@ def mock_registry():
             ),
         ]
         from src.skill_library.skill_base import SkillMeta
+
         reg.get_detail.return_value = SkillDetail(
-            meta=SkillMeta(id="baidu_search", name="百度搜索", type="domain", triggers=[]),
+            meta=SkillMeta(
+                id="baidu_search", name="百度搜索", type="domain", triggers=[]
+            ),
             source_code='goto("https://baidu.com")\nfill("#kw", "test")\nclick("#su")',
         )
         mock_get.return_value = reg
@@ -128,6 +129,7 @@ class TestDataModels:
 class TestKeywordExtraction:
     def test_extract_chinese_keyword(self):
         from src.core.script_generator import ScriptGenerator
+
         gen = ScriptGenerator()
         assert gen._extract_keyword("帮我在百度搜索 Python 教程") == "Python 教程"
         assert gen._extract_keyword("搜索人工智能") == "人工智能"
@@ -135,11 +137,13 @@ class TestKeywordExtraction:
 
     def test_extract_english_keyword(self):
         from src.core.script_generator import ScriptGenerator
+
         gen = ScriptGenerator()
         assert gen._extract_keyword("search for Python tutorial") is not None
 
     def test_extract_no_keyword(self):
         from src.core.script_generator import ScriptGenerator
+
         gen = ScriptGenerator()
         # 纯动词没有关键词
         result = gen._extract_keyword("搜索")
@@ -149,17 +153,20 @@ class TestKeywordExtraction:
 class TestUrlExtraction:
     def test_extract_full_url(self):
         from src.core.script_generator import ScriptGenerator
+
         gen = ScriptGenerator()
         assert gen._extract_url("打开 https://example.com") == "https://example.com"
 
     def test_extract_domain(self):
         from src.core.script_generator import ScriptGenerator
+
         gen = ScriptGenerator()
         url = gen._extract_url("打开 example.com")
         assert url == "https://example.com"
 
     def test_no_url(self):
         from src.core.script_generator import ScriptGenerator
+
         gen = ScriptGenerator()
         assert gen._extract_url("帮我搜索东西") is None
 
@@ -181,7 +188,9 @@ class TestAgentLoop:
         assert result.success is False
         assert "未启动" in result.error
 
-    def test_skill_hit_flow(self, mock_browser, mock_vision, mock_script_engine, mock_registry):
+    def test_skill_hit_flow(
+        self, mock_browser, mock_vision, mock_script_engine, mock_registry
+    ):
         """Should hit skill library and execute."""
         agent = AgentLoop(max_steps=3)
         result = agent.run("在百度搜索 Python")
@@ -207,7 +216,9 @@ class TestAgentLoop:
 
         assert result.success is False
 
-    def test_on_step_callback(self, mock_browser, mock_vision, mock_script_engine, mock_registry):
+    def test_on_step_callback(
+        self, mock_browser, mock_vision, mock_script_engine, mock_registry
+    ):
         """Should call on_step callback for each step."""
         steps_received = []
 
@@ -215,11 +226,13 @@ class TestAgentLoop:
             steps_received.append(step)
 
         agent = AgentLoop(max_steps=3, on_step=callback)
-        result = agent.run("在百度搜索 Python")
+        agent.run("在百度搜索 Python")
 
         assert len(steps_received) > 0
 
-    def test_navigate_task(self, mock_browser, mock_vision, mock_script_engine, mock_registry):
+    def test_navigate_task(
+        self, mock_browser, mock_vision, mock_script_engine, mock_registry
+    ):
         """Should handle navigation tasks."""
         mock_registry.search.return_value = []  # No skill hit
 
@@ -228,7 +241,9 @@ class TestAgentLoop:
 
         assert result.success is True
 
-    def test_screenshot_task(self, mock_browser, mock_vision, mock_script_engine, mock_registry):
+    def test_screenshot_task(
+        self, mock_browser, mock_vision, mock_script_engine, mock_registry
+    ):
         """Should handle screenshot tasks."""
         mock_registry.search.return_value = []  # No skill hit
 
@@ -292,12 +307,9 @@ class TestVisionFallback:
 class TestRunTask:
     @patch("src.core.agent_loop.AgentLoop")
     def test_run_task_calls_agent(self, mock_agent_cls):
-        from src.core.agent_loop import run_task
 
         mock_agent = MagicMock()
-        mock_agent.run.return_value = AgentTaskResult(
-            success=True, task="test"
-        )
+        mock_agent.run.return_value = AgentTaskResult(success=True, task="test")
         mock_agent_cls.return_value = mock_agent
 
         result = run_task("test task")

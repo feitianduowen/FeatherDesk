@@ -1,8 +1,14 @@
 """通用登录流程模板 —— 不绑定特定网站。"""
 
 
-def run(url: str, username_selector: str, password_selector: str,
-        submit_selector: str, username: str, password: str):
+def run(
+    url: str,
+    username_selector: str,
+    password_selector: str,
+    submit_selector: str,
+    username: str,
+    password: str,
+):
     """通用登录流程。
 
     Args:

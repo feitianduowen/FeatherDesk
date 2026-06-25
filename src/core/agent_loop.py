@@ -153,11 +153,17 @@ class AgentLoop:
             logger.info("Agent task started: %s", task)
 
             # 发射任务开始事件
-            self._bus.emit(Event(
-                name=EVENT_AGENT_TASK,
-                phase=Phase.BEFORE,
-                data={"task": task, "task_id": task_id, "max_steps": self._max_steps},
-            ))
+            self._bus.emit(
+                Event(
+                    name=EVENT_AGENT_TASK,
+                    phase=Phase.BEFORE,
+                    data={
+                        "task": task,
+                        "task_id": task_id,
+                        "max_steps": self._max_steps,
+                    },
+                )
+            )
 
             # 确保浏览器已启动
             bm = get_browser_manager()
@@ -272,39 +278,41 @@ class AgentLoop:
     # Event emission helpers
     # -------------------------------------------------------------------
 
-    def _emit_step_event(
-        self, step: AgentStep, task: str, task_id: str
-    ) -> None:
+    def _emit_step_event(self, step: AgentStep, task: str, task_id: str) -> None:
         """发射单步事件（EVENT_AGENT_STEP after + 阶段事件）。"""
-        self._bus.emit(Event(
-            name=EVENT_AGENT_STEP,
-            phase=Phase.AFTER,
-            data={
-                "task": task,
-                "task_id": task_id,
-                "step_number": step.step_number,
-                "state": step.state.value,
-                "action": step.action,
-                "result": step.result,
-                "success": step.success,
-                "error": step.error,
-            },
-        ))
+        self._bus.emit(
+            Event(
+                name=EVENT_AGENT_STEP,
+                phase=Phase.AFTER,
+                data={
+                    "task": task,
+                    "task_id": task_id,
+                    "step_number": step.step_number,
+                    "state": step.state.value,
+                    "action": step.action,
+                    "result": step.result,
+                    "success": step.success,
+                    "error": step.error,
+                },
+            )
+        )
 
     def _emit_task_after(self, result: AgentTaskResult, task_id: str) -> None:
         """发射任务结束事件。"""
-        self._bus.emit(Event(
-            name=EVENT_AGENT_TASK,
-            phase=Phase.AFTER,
-            data={
-                "task": result.task,
-                "task_id": task_id,
-                "success": result.success,
-                "steps_count": len(result.steps),
-                "final_url": result.final_url,
-                "error": result.error,
-            },
-        ))
+        self._bus.emit(
+            Event(
+                name=EVENT_AGENT_TASK,
+                phase=Phase.AFTER,
+                data={
+                    "task": result.task,
+                    "task_id": task_id,
+                    "success": result.success,
+                    "steps_count": len(result.steps),
+                    "final_url": result.final_url,
+                    "error": result.error,
+                },
+            )
+        )
 
     # -------------------------------------------------------------------
     # OBSERVE: 截图 + 分析页面
@@ -314,11 +322,13 @@ class AgentLoop:
         """观察当前页面状态。"""
         logger.debug("OBSERVE: observing page state (step %d)", step.step_number)
 
-        before_event = self._bus.emit(Event(
-            name=EVENT_AGENT_OBSERVE,
-            phase=Phase.BEFORE,
-            data={"step_number": step.step_number},
-        ))
+        before_event = self._bus.emit(
+            Event(
+                name=EVENT_AGENT_OBSERVE,
+                phase=Phase.BEFORE,
+                data={"step_number": step.step_number},
+            )
+        )
         if before_event.cancelled:
             step.result = "observe cancelled by hook"
             logger.info("OBSERVE: cancelled by hook")
@@ -340,12 +350,14 @@ class AgentLoop:
                     "OBSERVE: vision analysis succeeded (%d chars)",
                     len(analysis.summary),
                 )
-                self._bus.emit(Event(
-                    name=EVENT_AGENT_OBSERVE,
-                    phase=Phase.AFTER,
-                    data={"step_number": step.step_number, "method": "vision"},
-                    result=analysis.summary,
-                ))
+                self._bus.emit(
+                    Event(
+                        name=EVENT_AGENT_OBSERVE,
+                        phase=Phase.AFTER,
+                        data={"step_number": step.step_number, "method": "vision"},
+                        result=analysis.summary,
+                    )
+                )
                 return AgentState.PLAN
             except Exception as exc:
                 logger.debug(
@@ -359,17 +371,19 @@ class AgentLoop:
         step.page_summary = f"{title} ({url})"
         step.result = f"页面: {title}"
         logger.info("OBSERVE: fallback to basic info: %s", title)
-        self._bus.emit(Event(
-            name=EVENT_AGENT_OBSERVE,
-            phase=Phase.AFTER,
-            data={
-                "step_number": step.step_number,
-                "method": "fallback",
-                "url": url,
-                "title": title,
-            },
-            result=step.page_summary,
-        ))
+        self._bus.emit(
+            Event(
+                name=EVENT_AGENT_OBSERVE,
+                phase=Phase.AFTER,
+                data={
+                    "step_number": step.step_number,
+                    "method": "fallback",
+                    "url": url,
+                    "title": title,
+                },
+                result=step.page_summary,
+            )
+        )
         return AgentState.PLAN
 
     # -------------------------------------------------------------------
@@ -380,15 +394,17 @@ class AgentLoop:
         """根据任务和页面状态，决定下一步。"""
         logger.debug("PLAN: planning action for step %d", step.step_number)
 
-        before_event = self._bus.emit(Event(
-            name=EVENT_AGENT_PLAN,
-            phase=Phase.BEFORE,
-            data={
-                "step_number": step.step_number,
-                "task": task,
-                "page_summary": step.page_summary,
-            },
-        ))
+        before_event = self._bus.emit(
+            Event(
+                name=EVENT_AGENT_PLAN,
+                phase=Phase.BEFORE,
+                data={
+                    "step_number": step.step_number,
+                    "task": task,
+                    "page_summary": step.page_summary,
+                },
+            )
+        )
         if before_event.cancelled:
             step.result = "plan cancelled by hook"
             logger.info("PLAN: cancelled by hook")
@@ -411,17 +427,19 @@ class AgentLoop:
                 step.script = script
                 step.result = f"找到技能: {skill.name}"
                 logger.info("PLAN: matched skill '%s'", skill.name)
-                self._bus.emit(Event(
-                    name=EVENT_AGENT_PLAN,
-                    phase=Phase.AFTER,
-                    data={
-                        "step_number": step.step_number,
-                        "source": "skill_library",
-                        "skill_id": skill.id,
-                        "skill_name": skill.name,
-                    },
-                    result=step.result,
-                ))
+                self._bus.emit(
+                    Event(
+                        name=EVENT_AGENT_PLAN,
+                        phase=Phase.AFTER,
+                        data={
+                            "step_number": step.step_number,
+                            "source": "skill_library",
+                            "skill_id": skill.id,
+                            "skill_name": skill.name,
+                        },
+                        result=step.result,
+                    )
+                )
                 return AgentState.ACT
 
         # 2. 查找已保存的脚本（经验复用）
@@ -431,12 +449,18 @@ class AgentLoop:
             step.script = saved_script.script
             step.result = f"找到已保存脚本 (成功率: {saved_script.success_rate:.0%})"
             logger.info("PLAN: reusing saved script '%s'", saved_script.id)
-            self._bus.emit(Event(
-                name=EVENT_AGENT_PLAN,
-                phase=Phase.AFTER,
-                data={"step_number": step.step_number, "source": "experience", "script_id": saved_script.id},
-                result=step.result,
-            ))
+            self._bus.emit(
+                Event(
+                    name=EVENT_AGENT_PLAN,
+                    phase=Phase.AFTER,
+                    data={
+                        "step_number": step.step_number,
+                        "source": "experience",
+                        "script_id": saved_script.id,
+                    },
+                    result=step.result,
+                )
+            )
             return AgentState.ACT
 
         # 3. 未命中 → 生成脚本
@@ -446,23 +470,27 @@ class AgentLoop:
             step.script = script
             step.result = "未命中技能库，生成临时脚本"
             logger.info("PLAN: generated ad-hoc script")
-            self._bus.emit(Event(
-                name=EVENT_AGENT_PLAN,
-                phase=Phase.AFTER,
-                data={"step_number": step.step_number, "source": "generated"},
-                result=step.result,
-            ))
+            self._bus.emit(
+                Event(
+                    name=EVENT_AGENT_PLAN,
+                    phase=Phase.AFTER,
+                    data={"step_number": step.step_number, "source": "generated"},
+                    result=step.result,
+                )
+            )
             return AgentState.ACT
 
         # 3. 无法生成脚本
         step.result = "无法规划行动"
         logger.warning("PLAN: no action could be planned")
-        self._bus.emit(Event(
-            name=EVENT_AGENT_PLAN,
-            phase=Phase.AFTER,
-            data={"step_number": step.step_number, "source": "none"},
-            result=step.result,
-        ))
+        self._bus.emit(
+            Event(
+                name=EVENT_AGENT_PLAN,
+                phase=Phase.AFTER,
+                data={"step_number": step.step_number, "source": "none"},
+                result=step.result,
+            )
+        )
         return AgentState.FAILED
 
     def _generate_script(self, task: str, page_summary: str) -> str | None:
@@ -490,8 +518,8 @@ class AgentLoop:
 
         # 检查源码是否已经有独立的 run() 调用（不是 def run 定义）
         # 去掉 def 语句后，检查是否还有 run( 调用
-        code_without_defs = re.sub(r'def\s+\w+\s*\([^)]*\)\s*:', '', source_code)
-        if 'run(' in code_without_defs:
+        code_without_defs = re.sub(r"def\s+\w+\s*\([^)]*\)\s*:", "", source_code)
+        if "run(" in code_without_defs:
             # 已经有调用语句，直接返回
             return source_code
 
@@ -502,6 +530,7 @@ class AgentLoop:
     def _extract_site(self, url: str) -> str:
         """从 URL 中提取站点名称。"""
         from urllib.parse import urlparse
+
         try:
             hostname = urlparse(url).hostname or ""
             # 去掉 www. 前缀，取第一段
@@ -526,15 +555,17 @@ class AgentLoop:
             len(step.script),
         )
 
-        before_event = self._bus.emit(Event(
-            name=EVENT_AGENT_ACT,
-            phase=Phase.BEFORE,
-            data={
-                "step_number": step.step_number,
-                "script": step.script,
-                "action": step.action,
-            },
-        ))
+        before_event = self._bus.emit(
+            Event(
+                name=EVENT_AGENT_ACT,
+                phase=Phase.BEFORE,
+                data={
+                    "step_number": step.step_number,
+                    "script": step.script,
+                    "action": step.action,
+                },
+            )
+        )
         if before_event.cancelled:
             step.result = "act cancelled by hook"
             logger.info("ACT: cancelled by hook")
@@ -569,16 +600,18 @@ class AgentLoop:
                 except Exception:
                     pass  # 保存失败不影响主流程
 
-            self._bus.emit(Event(
-                name=EVENT_AGENT_ACT,
-                phase=Phase.AFTER,
-                data={
-                    "step_number": step.step_number,
-                    "action": step.action,
-                    "output": result.output,
-                },
-                result=step.result,
-            ))
+            self._bus.emit(
+                Event(
+                    name=EVENT_AGENT_ACT,
+                    phase=Phase.AFTER,
+                    data={
+                        "step_number": step.step_number,
+                        "action": step.action,
+                        "output": result.output,
+                    },
+                    result=step.result,
+                )
+            )
             # 任务完成
             return AgentState.DONE
         else:
@@ -587,16 +620,18 @@ class AgentLoop:
             step.result = f"执行失败: {step.error[:100]}"
             logger.warning("ACT: script failed: %s", step.error[:200])
 
-            self._bus.emit(Event(
-                name=EVENT_AGENT_ACT,
-                phase=Phase.AFTER,
-                data={
-                    "step_number": step.step_number,
-                    "action": step.action,
-                    "error": step.error,
-                },
-                error=Exception(step.error),
-            ))
+            self._bus.emit(
+                Event(
+                    name=EVENT_AGENT_ACT,
+                    phase=Phase.AFTER,
+                    data={
+                        "step_number": step.step_number,
+                        "action": step.action,
+                        "error": step.error,
+                    },
+                    error=Exception(step.error),
+                )
+            )
 
             # 尝试自愈：如果有选择器错误，可以降级
             if "选择器" in step.error or "selector" in step.error.lower():
@@ -615,15 +650,17 @@ class AgentLoop:
             step.step_number,
         )
 
-        before_event = self._bus.emit(Event(
-            name=EVENT_AGENT_HEAL,
-            phase=Phase.BEFORE,
-            data={
-                "step_number": step.step_number,
-                "original_error": step.error,
-                "method": "vision_fallback",
-            },
-        ))
+        before_event = self._bus.emit(
+            Event(
+                name=EVENT_AGENT_HEAL,
+                phase=Phase.BEFORE,
+                data={
+                    "step_number": step.step_number,
+                    "original_error": step.error,
+                    "method": "vision_fallback",
+                },
+            )
+        )
         if before_event.cancelled:
             logger.info("HEAL: cancelled by hook")
             return AgentState.FAILED
@@ -659,45 +696,51 @@ wait_for_navigation()"""
                         step.success = True
                         step.result = f"视觉 fallback 成功: {elem.description}"
                         logger.info("HEAL: vision fallback succeeded")
-                        self._bus.emit(Event(
-                            name=EVENT_AGENT_HEAL,
-                            phase=Phase.AFTER,
-                            data={
-                                "step_number": step.step_number,
-                                "method": "vision_fallback",
-                                "healed": True,
-                                "element": elem.description,
-                            },
-                            result=step.result,
-                        ))
+                        self._bus.emit(
+                            Event(
+                                name=EVENT_AGENT_HEAL,
+                                phase=Phase.AFTER,
+                                data={
+                                    "step_number": step.step_number,
+                                    "method": "vision_fallback",
+                                    "healed": True,
+                                    "element": elem.description,
+                                },
+                                result=step.result,
+                            )
+                        )
                         return AgentState.DONE
 
             step.result = "视觉 fallback 也失败了"
             logger.warning("HEAL: vision fallback failed — no usable elements")
-            self._bus.emit(Event(
-                name=EVENT_AGENT_HEAL,
-                phase=Phase.AFTER,
-                data={
-                    "step_number": step.step_number,
-                    "method": "vision_fallback",
-                    "healed": False,
-                },
-                result=step.result,
-            ))
+            self._bus.emit(
+                Event(
+                    name=EVENT_AGENT_HEAL,
+                    phase=Phase.AFTER,
+                    data={
+                        "step_number": step.step_number,
+                        "method": "vision_fallback",
+                        "healed": False,
+                    },
+                    result=step.result,
+                )
+            )
             return AgentState.FAILED
 
         except Exception as exc:
             logger.error("HEAL: vision fallback raised: %s", exc, exc_info=True)
-            self._bus.emit(Event(
-                name=EVENT_AGENT_HEAL,
-                phase=Phase.AFTER,
-                data={
-                    "step_number": step.step_number,
-                    "method": "vision_fallback",
-                    "healed": False,
-                },
-                error=exc,
-            ))
+            self._bus.emit(
+                Event(
+                    name=EVENT_AGENT_HEAL,
+                    phase=Phase.AFTER,
+                    data={
+                        "step_number": step.step_number,
+                        "method": "vision_fallback",
+                        "healed": False,
+                    },
+                    error=exc,
+                )
+            )
             return AgentState.FAILED
 
 

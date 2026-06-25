@@ -77,6 +77,7 @@ EVENT_AGENT_HEAL = "agent_heal"
 
 class Phase(str, Enum):
     """Hook execution phase."""
+
     BEFORE = "before"
     AFTER = "after"
 
@@ -133,6 +134,7 @@ class Event:
 @dataclass
 class _HookEntry:
     """Internal bookkeeping for a registered hook."""
+
     callback: Callable[[Event], None]
     phase: Phase
     priority: int = 0
@@ -180,12 +182,15 @@ class EventBus:
         phase_enum = Phase(phase) if isinstance(phase, str) else phase
 
         def decorator(fn: Callable[[Event], None]) -> Callable[[Event], None]:
-            self._add_hook(event_name, _HookEntry(
-                callback=fn,
-                phase=phase_enum,
-                priority=priority,
-                once=False,
-            ))
+            self._add_hook(
+                event_name,
+                _HookEntry(
+                    callback=fn,
+                    phase=phase_enum,
+                    priority=priority,
+                    once=False,
+                ),
+            )
             return fn
 
         return decorator
@@ -207,12 +212,15 @@ class EventBus:
             priority: Lower values fire first.
         """
         phase_enum = Phase(phase) if isinstance(phase, str) else phase
-        self._add_hook(event_name, _HookEntry(
-            callback=callback,
-            phase=phase_enum,
-            priority=priority,
-            once=True,
-        ))
+        self._add_hook(
+            event_name,
+            _HookEntry(
+                callback=callback,
+                phase=phase_enum,
+                priority=priority,
+                once=True,
+            ),
+        )
 
     def register(
         self,
@@ -235,12 +243,15 @@ class EventBus:
             The callback (so callers can pass it to ``unregister`` later).
         """
         phase_enum = Phase(phase) if isinstance(phase, str) else phase
-        self._add_hook(event_name, _HookEntry(
-            callback=callback,
-            phase=phase_enum,
-            priority=priority,
-            once=False,
-        ))
+        self._add_hook(
+            event_name,
+            _HookEntry(
+                callback=callback,
+                phase=phase_enum,
+                priority=priority,
+                once=False,
+            ),
+        )
         return callback
 
     def unregister(
@@ -316,10 +327,12 @@ class EventBus:
                     },
                 )
                 # Attach error info but don't propagate — hooks are observers
-                event.metadata.setdefault("hook_errors", []).append({
-                    "callback": entry.callback.__qualname__,
-                    "error": str(exc),
-                })
+                event.metadata.setdefault("hook_errors", []).append(
+                    {
+                        "callback": entry.callback.__qualname__,
+                        "error": str(exc),
+                    }
+                )
 
             if entry.once:
                 to_remove.append(entry)

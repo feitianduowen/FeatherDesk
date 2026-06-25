@@ -73,7 +73,14 @@ def go_back() -> str:
         result = f"后退成功: {page.url}"
     except Exception as exc:
         result = f"后退失败: {exc}"
-    bus.emit(Event(name=EVENT_GO_BACK, phase=Phase.AFTER, data={"page_url": page.url}, result=result))
+    bus.emit(
+        Event(
+            name=EVENT_GO_BACK,
+            phase=Phase.AFTER,
+            data={"page_url": page.url},
+            result=result,
+        )
+    )
     return result
 
 
@@ -85,7 +92,9 @@ def go_forward() -> str:
     """
     bus = get_event_bus()
     page = get_browser_manager().get_page()
-    event = Event(name=EVENT_GO_FORWARD, phase=Phase.BEFORE, data={"page_url": page.url})
+    event = Event(
+        name=EVENT_GO_FORWARD, phase=Phase.BEFORE, data={"page_url": page.url}
+    )
     bus.emit(event)
     if event.cancelled:
         return f"前进已取消: {event.metadata.get('cancel_reason', '')}"
@@ -94,7 +103,14 @@ def go_forward() -> str:
         result = f"前进成功: {page.url}"
     except Exception as exc:
         result = f"前进失败: {exc}"
-    bus.emit(Event(name=EVENT_GO_FORWARD, phase=Phase.AFTER, data={"page_url": page.url}, result=result))
+    bus.emit(
+        Event(
+            name=EVENT_GO_FORWARD,
+            phase=Phase.AFTER,
+            data={"page_url": page.url},
+            result=result,
+        )
+    )
     return result
 
 
@@ -115,7 +131,14 @@ def reload_page() -> str:
         result = f"刷新成功: {page.url}"
     except Exception as exc:
         result = f"刷新失败: {exc}"
-    bus.emit(Event(name=EVENT_RELOAD, phase=Phase.AFTER, data={"page_url": page.url}, result=result))
+    bus.emit(
+        Event(
+            name=EVENT_RELOAD,
+            phase=Phase.AFTER,
+            data={"page_url": page.url},
+            result=result,
+        )
+    )
     return result
 
 
@@ -148,7 +171,10 @@ def smart_click(
     )
     bus.emit(before_event)
     if before_event.cancelled:
-        return {"success": False, "error": f"smart_click 已取消: {before_event.metadata.get('cancel_reason', '')}"}
+        return {
+            "success": False,
+            "error": f"smart_click 已取消: {before_event.metadata.get('cancel_reason', '')}",
+        }
 
     # Allow hooks to modify element_name and domain
     element_name = before_event.data.get("element_name", element_name)
@@ -175,7 +201,14 @@ def smart_click(
 
     if not result.get("success"):
         final = {"success": False, "error": result.get("error", "未知错误")}
-        bus.emit(Event(name=EVENT_SMART_CLICK, phase=Phase.AFTER, data=before_event.data, result=final))
+        bus.emit(
+            Event(
+                name=EVENT_SMART_CLICK,
+                phase=Phase.AFTER,
+                data=before_event.data,
+                result=final,
+            )
+        )
         return final
 
     # 自愈：提升备用选择器优先级
@@ -194,7 +227,14 @@ def smart_click(
         "index": result["index"],
         "healed": healed,
     }
-    bus.emit(Event(name=EVENT_SMART_CLICK, phase=Phase.AFTER, data=before_event.data, result=final))
+    bus.emit(
+        Event(
+            name=EVENT_SMART_CLICK,
+            phase=Phase.AFTER,
+            data=before_event.data,
+            result=final,
+        )
+    )
     return final
 
 
@@ -221,7 +261,10 @@ def smart_fill(
     )
     bus.emit(before_event)
     if before_event.cancelled:
-        return {"success": False, "error": f"smart_fill 已取消: {before_event.metadata.get('cancel_reason', '')}"}
+        return {
+            "success": False,
+            "error": f"smart_fill 已取消: {before_event.metadata.get('cancel_reason', '')}",
+        }
 
     # Allow hooks to modify parameters
     element_name = before_event.data.get("element_name", element_name)
@@ -249,7 +292,14 @@ def smart_fill(
 
     if not result.get("success"):
         final = {"success": False, "error": result.get("error", "未知错误")}
-        bus.emit(Event(name=EVENT_SMART_FILL, phase=Phase.AFTER, data=before_event.data, result=final))
+        bus.emit(
+            Event(
+                name=EVENT_SMART_FILL,
+                phase=Phase.AFTER,
+                data=before_event.data,
+                result=final,
+            )
+        )
         return final
 
     healed = False
@@ -267,7 +317,14 @@ def smart_fill(
         "index": result["index"],
         "healed": healed,
     }
-    bus.emit(Event(name=EVENT_SMART_FILL, phase=Phase.AFTER, data=before_event.data, result=final))
+    bus.emit(
+        Event(
+            name=EVENT_SMART_FILL,
+            phase=Phase.AFTER,
+            data=before_event.data,
+            result=final,
+        )
+    )
     return final
 
 

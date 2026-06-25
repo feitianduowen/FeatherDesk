@@ -15,7 +15,6 @@ from src.core.vision import (
     reset_vision_module,
 )
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
@@ -41,30 +40,32 @@ def mock_page():
 
 @pytest.fixture
 def sample_analysis_json():
-    return json.dumps({
-        "summary": "这是一个登录页面",
-        "elements": [
-            {
-                "description": "用户名输入框",
-                "x": 100,
-                "y": 200,
-                "width": 200,
-                "height": 30,
-                "suggested_selector": "#username",
-                "confidence": 0.95,
-            },
-            {
-                "description": "登录按钮",
-                "x": 100,
-                "y": 300,
-                "width": 80,
-                "height": 35,
-                "suggested_selector": "#login-btn",
-                "confidence": 0.9,
-            },
-        ],
-        "suggested_actions": ["填写用户名和密码", "点击登录按钮"],
-    })
+    return json.dumps(
+        {
+            "summary": "这是一个登录页面",
+            "elements": [
+                {
+                    "description": "用户名输入框",
+                    "x": 100,
+                    "y": 200,
+                    "width": 200,
+                    "height": 30,
+                    "suggested_selector": "#username",
+                    "confidence": 0.95,
+                },
+                {
+                    "description": "登录按钮",
+                    "x": 100,
+                    "y": 300,
+                    "width": 80,
+                    "height": 35,
+                    "suggested_selector": "#login-btn",
+                    "confidence": 0.9,
+                },
+            ],
+            "suggested_actions": ["填写用户名和密码", "点击登录按钮"],
+        }
+    )
 
 
 @pytest.fixture
@@ -111,6 +112,7 @@ class TestProviderDetection:
         with patch.dict("os.environ", {"OPENAI_API_KEY": "key"}, clear=True):
             # Remove anthropic key if set
             import os
+
             os.environ.pop("ANTHROPIC_API_KEY", None)
             vm = VisionModule(api_key="key")
             assert vm._provider == "openai"
@@ -118,6 +120,7 @@ class TestProviderDetection:
     def test_no_api_key_raises(self):
         with patch.dict("os.environ", {}, clear=True):
             import os
+
             os.environ.pop("ANTHROPIC_API_KEY", None)
             os.environ.pop("OPENAI_API_KEY", None)
             with pytest.raises(ValueError, match="未找到"):
@@ -160,7 +163,7 @@ class TestResponseParsing:
         assert len(analysis.suggested_actions) == 2
 
     def test_parse_json_in_markdown(self, vision_with_mock_llm):
-        raw = "Here is the analysis:\n```json\n{\"summary\": \"test\"}\n```\nDone."
+        raw = 'Here is the analysis:\n```json\n{"summary": "test"}\n```\nDone.'
         analysis = vision_with_mock_llm._parse_response(raw)
         assert analysis.summary == "test"
 

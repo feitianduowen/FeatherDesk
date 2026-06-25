@@ -2,11 +2,10 @@
 
 from __future__ import annotations
 
-import yaml
 import pytest
+import yaml
 
 from src.layer_3.config_updater import _is_xpath, update_selector_priority
-
 
 # ---------------------------------------------------------------------------
 # _is_xpath

@@ -65,7 +65,9 @@ class ScriptStore:
         self._index: dict[str, ScriptRecord] = {}
         self._load_index()
 
-    def save(self, task: str, script: str, tags: list[str] | None = None) -> ScriptRecord:
+    def save(
+        self, task: str, script: str, tags: list[str] | None = None
+    ) -> ScriptRecord:
         """保存脚本。
 
         Args:

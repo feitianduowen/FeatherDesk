@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from pathlib import Path
-
 import pytest
 import yaml
 
@@ -14,8 +12,7 @@ from src.skill_library.registry import (
     get_skill_registry,
     reset_skill_registry,
 )
-from src.skill_library.skill_base import SkillBase, SkillMeta, SkillResult
-
+from src.skill_library.skill_base import SkillMeta
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -174,12 +171,10 @@ class TestSkillRegistryRegister:
             SkillMeta(id="c/d", name="D", type="interaction"),
         ]
         reg.register_many([(m, None) for m in metas])
-        assert len(registry := reg.list_all()) == 2
+        assert len(reg.list_all()) == 2
 
     def test_register_overwrites_same_id(self, registry):
-        new_meta = SkillMeta(
-            id="domain/baidu_search", name="百度搜索v2", type="domain"
-        )
+        new_meta = SkillMeta(id="domain/baidu_search", name="百度搜索v2", type="domain")
         registry.register(new_meta)
         assert len(registry.list_all()) == 2  # no duplicate
         assert registry.get("domain/baidu_search").name == "百度搜索v2"  # overwritten
@@ -419,21 +414,15 @@ class TestSkillRegistryGetDetail:
 
 class TestMatchesQuery:
     def test_trigger_substring_match(self):
-        meta = SkillMeta(
-            id="test", name="Test", type="interaction", triggers=["搜索"]
-        )
+        meta = SkillMeta(id="test", name="Test", type="interaction", triggers=["搜索"])
         assert SkillRegistry._matches_query(meta, "帮我搜索一下") is True
 
     def test_trigger_case_insensitive(self):
-        meta = SkillMeta(
-            id="test", name="Test", type="interaction", triggers=["LOGIN"]
-        )
+        meta = SkillMeta(id="test", name="Test", type="interaction", triggers=["LOGIN"])
         assert SkillRegistry._matches_query(meta, "please login") is True
 
     def test_no_trigger_match(self):
-        meta = SkillMeta(
-            id="test", name="Test", type="interaction", triggers=["搜索"]
-        )
+        meta = SkillMeta(id="test", name="Test", type="interaction", triggers=["搜索"])
         assert SkillRegistry._matches_query(meta, "打开网页") is False
 
     def test_empty_triggers(self):

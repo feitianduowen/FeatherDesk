@@ -160,13 +160,15 @@ class ScriptEngine:
         finally:
             sys.stdout = old_stdout
 
-        bus.emit(Event(
-            name=EVENT_SCRIPT_EXECUTE,
-            phase=Phase.AFTER,
-            data={"code": script_code},
-            result=result,
-            error=result.error if not result.success else None,
-        ))
+        bus.emit(
+            Event(
+                name=EVENT_SCRIPT_EXECUTE,
+                phase=Phase.AFTER,
+                data={"code": script_code},
+                result=result,
+                error=result.error if not result.success else None,
+            )
+        )
         return result
 
     def _build_namespace(
@@ -183,6 +185,7 @@ class ScriptEngine:
         Returns:
             受限的命名空间字典。
         """
+
         # 安全的 print（写入 buffer 而非 stdout）
         def safe_print(*args, **kwargs):
             kwargs["file"] = output_buffer

@@ -4,7 +4,12 @@ from __future__ import annotations
 
 import pytest
 
-from src.core.script_store import ScriptRecord, ScriptStore, get_script_store, reset_script_store
+from src.core.script_store import (
+    ScriptRecord,
+    ScriptStore,
+    get_script_store,
+    reset_script_store,
+)
 
 
 @pytest.fixture
@@ -19,7 +24,9 @@ def store(tmp_path):
 
 class TestScriptRecord:
     def test_success_rate(self):
-        record = ScriptRecord(id="test", task="test", script="test", use_count=10, success_count=7)
+        record = ScriptRecord(
+            id="test", task="test", script="test", use_count=10, success_count=7
+        )
         assert record.success_rate == 0.7
 
     def test_success_rate_zero(self):

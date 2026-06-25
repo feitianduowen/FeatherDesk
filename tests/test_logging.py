@@ -11,6 +11,10 @@ import pytest
 from src.logging import (
     JSONFormatter,
     TextFormatter,
+    _context,
+    _get_log_format,
+    _get_log_level,
+    _initialize_root_logger,
     bind_context,
     clear_context,
     configure_logging_from_env,
@@ -20,10 +24,6 @@ from src.logging import (
     log_operation,
     log_script_execution,
     log_timing,
-    _get_log_level,
-    _get_log_format,
-    _initialize_root_logger,
-    _context,
 )
 
 
@@ -80,6 +80,7 @@ class TestGetLogger:
     def test_logger_level_matches_env(self):
         with patch.dict(os.environ, {"LOG_LEVEL": "WARNING"}):
             import src.logging
+
             src.logging._initialized = False
             src.logging._loggers.clear()
             logger = get_logger("src.level_test")
@@ -149,6 +150,7 @@ class TestInitializeRootLogger:
     def test_json_format_creates_json_formatter(self):
         with patch.dict(os.environ, {"LOG_FORMAT": "json"}):
             import src.logging
+
             src.logging._initialized = False
             _initialize_root_logger()
             root = logging.getLogger("agentic_playwright")
@@ -157,6 +159,7 @@ class TestInitializeRootLogger:
     def test_no_color_env_disables_colors(self):
         with patch.dict(os.environ, {"NO_COLOR": "1"}):
             import src.logging
+
             src.logging._initialized = False
             _initialize_root_logger()
             root = logging.getLogger("agentic_playwright")
@@ -166,6 +169,7 @@ class TestInitializeRootLogger:
 
     def test_clears_existing_handlers_on_reinit(self):
         import src.logging
+
         _initialize_root_logger()
         root = logging.getLogger("agentic_playwright")
         root.addHandler(logging.StreamHandler())  # add extra
@@ -184,8 +188,13 @@ class TestJSONFormatter:
     def test_formats_basic_record(self):
         formatter = JSONFormatter()
         record = logging.LogRecord(
-            name="test", level=logging.INFO, pathname="test.py",
-            lineno=10, msg="Test message", args=(), exc_info=None,
+            name="test",
+            level=logging.INFO,
+            pathname="test.py",
+            lineno=10,
+            msg="Test message",
+            args=(),
+            exc_info=None,
         )
         data = json.loads(formatter.format(record))
 
@@ -197,8 +206,13 @@ class TestJSONFormatter:
     def test_includes_extra_fields(self):
         formatter = JSONFormatter()
         record = logging.LogRecord(
-            name="test", level=logging.INFO, pathname="test.py",
-            lineno=10, msg="Test", args=(), exc_info=None,
+            name="test",
+            level=logging.INFO,
+            pathname="test.py",
+            lineno=10,
+            msg="Test",
+            args=(),
+            exc_info=None,
         )
         record.operation = "screenshot"
         record.duration_ms = 150
@@ -212,8 +226,13 @@ class TestJSONFormatter:
         token = _context.set({"request_id": "abc123"})
         try:
             record = logging.LogRecord(
-                name="test", level=logging.INFO, pathname="test.py",
-                lineno=10, msg="Test", args=(), exc_info=None,
+                name="test",
+                level=logging.INFO,
+                pathname="test.py",
+                lineno=10,
+                msg="Test",
+                args=(),
+                exc_info=None,
             )
             data = json.loads(formatter.format(record))
             assert data["context"]["request_id"] == "abc123"
@@ -226,11 +245,17 @@ class TestJSONFormatter:
             raise ValueError("test error")
         except ValueError:
             import sys
+
             exc_info = sys.exc_info()
 
         record = logging.LogRecord(
-            name="test", level=logging.ERROR, pathname="test.py",
-            lineno=10, msg="Error occurred", args=(), exc_info=exc_info,
+            name="test",
+            level=logging.ERROR,
+            pathname="test.py",
+            lineno=10,
+            msg="Error occurred",
+            args=(),
+            exc_info=exc_info,
         )
         data = json.loads(formatter.format(record))
 
@@ -242,8 +267,13 @@ class TestJSONFormatter:
     def test_debug_level_includes_source_location(self):
         formatter = JSONFormatter()
         record = logging.LogRecord(
-            name="test", level=logging.DEBUG, pathname="/app/test.py",
-            lineno=42, msg="Debug msg", args=(), exc_info=None,
+            name="test",
+            level=logging.DEBUG,
+            pathname="/app/test.py",
+            lineno=42,
+            msg="Debug msg",
+            args=(),
+            exc_info=None,
         )
         record.funcName = "my_func"
 
@@ -256,8 +286,13 @@ class TestJSONFormatter:
     def test_info_level_excludes_source_location(self):
         formatter = JSONFormatter()
         record = logging.LogRecord(
-            name="test", level=logging.INFO, pathname="/app/test.py",
-            lineno=42, msg="Info msg", args=(), exc_info=None,
+            name="test",
+            level=logging.INFO,
+            pathname="/app/test.py",
+            lineno=42,
+            msg="Info msg",
+            args=(),
+            exc_info=None,
         )
         data = json.loads(formatter.format(record))
         assert "source" not in data
@@ -265,8 +300,13 @@ class TestJSONFormatter:
     def test_no_extra_field_when_none_present(self):
         formatter = JSONFormatter()
         record = logging.LogRecord(
-            name="test", level=logging.INFO, pathname="test.py",
-            lineno=1, msg="clean", args=(), exc_info=None,
+            name="test",
+            level=logging.INFO,
+            pathname="test.py",
+            lineno=1,
+            msg="clean",
+            args=(),
+            exc_info=None,
         )
         data = json.loads(formatter.format(record))
         assert "extra" not in data
@@ -275,8 +315,13 @@ class TestJSONFormatter:
         formatter = JSONFormatter()
         clear_context()
         record = logging.LogRecord(
-            name="test", level=logging.INFO, pathname="test.py",
-            lineno=1, msg="no ctx", args=(), exc_info=None,
+            name="test",
+            level=logging.INFO,
+            pathname="test.py",
+            lineno=1,
+            msg="no ctx",
+            args=(),
+            exc_info=None,
         )
         data = json.loads(formatter.format(record))
         assert "context" not in data
@@ -284,8 +329,13 @@ class TestJSONFormatter:
     def test_output_is_valid_json(self):
         formatter = JSONFormatter()
         record = logging.LogRecord(
-            name="test", level=logging.INFO, pathname="test.py",
-            lineno=1, msg="unicode: 中文", args=(), exc_info=None,
+            name="test",
+            level=logging.INFO,
+            pathname="test.py",
+            lineno=1,
+            msg="unicode: 中文",
+            args=(),
+            exc_info=None,
         )
         output = formatter.format(record)
         parsed = json.loads(output)
@@ -294,8 +344,13 @@ class TestJSONFormatter:
     def test_args_are_interpolated(self):
         formatter = JSONFormatter()
         record = logging.LogRecord(
-            name="test", level=logging.INFO, pathname="test.py",
-            lineno=1, msg="Hello %s, count=%d", args=("world", 42), exc_info=None,
+            name="test",
+            level=logging.INFO,
+            pathname="test.py",
+            lineno=1,
+            msg="Hello %s, count=%d",
+            args=("world", 42),
+            exc_info=None,
         )
         data = json.loads(formatter.format(record))
         assert data["message"] == "Hello world, count=42"
@@ -310,8 +365,13 @@ class TestTextFormatter:
     def test_formats_basic_record(self):
         formatter = TextFormatter(use_colors=False)
         record = logging.LogRecord(
-            name="test", level=logging.INFO, pathname="test.py",
-            lineno=10, msg="Test message", args=(), exc_info=None,
+            name="test",
+            level=logging.INFO,
+            pathname="test.py",
+            lineno=10,
+            msg="Test message",
+            args=(),
+            exc_info=None,
         )
         output = formatter.format(record)
 
@@ -322,8 +382,13 @@ class TestTextFormatter:
     def test_includes_extra_fields(self):
         formatter = TextFormatter(use_colors=False)
         record = logging.LogRecord(
-            name="test", level=logging.INFO, pathname="test.py",
-            lineno=10, msg="Test", args=(), exc_info=None,
+            name="test",
+            level=logging.INFO,
+            pathname="test.py",
+            lineno=10,
+            msg="Test",
+            args=(),
+            exc_info=None,
         )
         record.operation = "screenshot"
 
@@ -334,8 +399,12 @@ class TestTextFormatter:
         formatter = TextFormatter(use_colors=False)
         record = logging.LogRecord(
             name="agentic_playwright.very_long_module_name_here",
-            level=logging.INFO, pathname="test.py",
-            lineno=1, msg="msg", args=(), exc_info=None,
+            level=logging.INFO,
+            pathname="test.py",
+            lineno=1,
+            msg="msg",
+            args=(),
+            exc_info=None,
         )
         output = formatter.format(record)
         # Should contain the truncated prefix (last 17 chars after "...")
@@ -344,8 +413,13 @@ class TestTextFormatter:
     def test_short_name_not_truncated(self):
         formatter = TextFormatter(use_colors=False)
         record = logging.LogRecord(
-            name="short", level=logging.INFO, pathname="test.py",
-            lineno=1, msg="msg", args=(), exc_info=None,
+            name="short",
+            level=logging.INFO,
+            pathname="test.py",
+            lineno=1,
+            msg="msg",
+            args=(),
+            exc_info=None,
         )
         output = formatter.format(record)
         assert "short" in output
@@ -355,8 +429,13 @@ class TestTextFormatter:
         token = _context.set({"req_id": "xyz"})
         try:
             record = logging.LogRecord(
-                name="test", level=logging.INFO, pathname="test.py",
-                lineno=1, msg="msg", args=(), exc_info=None,
+                name="test",
+                level=logging.INFO,
+                pathname="test.py",
+                lineno=1,
+                msg="msg",
+                args=(),
+                exc_info=None,
             )
             output = formatter.format(record)
             assert "req_id=xyz" in output
@@ -369,11 +448,17 @@ class TestTextFormatter:
             raise RuntimeError("boom")
         except RuntimeError:
             import sys
+
             exc_info = sys.exc_info()
 
         record = logging.LogRecord(
-            name="test", level=logging.ERROR, pathname="test.py",
-            lineno=1, msg="err", args=(), exc_info=exc_info,
+            name="test",
+            level=logging.ERROR,
+            pathname="test.py",
+            lineno=1,
+            msg="err",
+            args=(),
+            exc_info=exc_info,
         )
         output = formatter.format(record)
         assert "RuntimeError" in output
@@ -383,8 +468,13 @@ class TestTextFormatter:
     def test_no_exception_when_none(self):
         formatter = TextFormatter(use_colors=False)
         record = logging.LogRecord(
-            name="test", level=logging.INFO, pathname="test.py",
-            lineno=1, msg="ok", args=(), exc_info=None,
+            name="test",
+            level=logging.INFO,
+            pathname="test.py",
+            lineno=1,
+            msg="ok",
+            args=(),
+            exc_info=None,
         )
         output = formatter.format(record)
         assert "Traceback" not in output
@@ -394,8 +484,13 @@ class TestTextFormatter:
         monkeypatch.setattr("sys.stderr.isatty", lambda: True)
         formatter = TextFormatter(use_colors=True)
         record = logging.LogRecord(
-            name="test", level=logging.ERROR, pathname="test.py",
-            lineno=1, msg="err", args=(), exc_info=None,
+            name="test",
+            level=logging.ERROR,
+            pathname="test.py",
+            lineno=1,
+            msg="err",
+            args=(),
+            exc_info=None,
         )
         output = formatter.format(record)
         # ANSI red for ERROR
@@ -404,8 +499,13 @@ class TestTextFormatter:
     def test_color_codes_absent_when_disabled(self):
         formatter = TextFormatter(use_colors=False)
         record = logging.LogRecord(
-            name="test", level=logging.ERROR, pathname="test.py",
-            lineno=1, msg="err", args=(), exc_info=None,
+            name="test",
+            level=logging.ERROR,
+            pathname="test.py",
+            lineno=1,
+            msg="err",
+            args=(),
+            exc_info=None,
         )
         output = formatter.format(record)
         assert "\033[" not in output
@@ -413,8 +513,13 @@ class TestTextFormatter:
     def test_multiple_extra_fields(self):
         formatter = TextFormatter(use_colors=False)
         record = logging.LogRecord(
-            name="test", level=logging.INFO, pathname="test.py",
-            lineno=1, msg="msg", args=(), exc_info=None,
+            name="test",
+            level=logging.INFO,
+            pathname="test.py",
+            lineno=1,
+            msg="msg",
+            args=(),
+            exc_info=None,
         )
         record.a = 1
         record.b = 2
@@ -486,6 +591,7 @@ class TestContextBinding:
 class TestLogOperation:
     def test_logs_success(self, capture_logs):
         import src.logging
+
         root = logging.getLogger("agentic_playwright")
         root.addHandler(capture_logs)
         root.setLevel(logging.DEBUG)
@@ -499,6 +605,7 @@ class TestLogOperation:
 
     def test_logs_failure(self, capture_logs):
         import src.logging
+
         root = logging.getLogger("agentic_playwright")
         root.addHandler(capture_logs)
         root.setLevel(logging.DEBUG)
@@ -512,6 +619,7 @@ class TestLogOperation:
 
     def test_logs_with_extra_kwargs(self, capture_logs):
         import src.logging
+
         root = logging.getLogger("agentic_playwright")
         root.addHandler(capture_logs)
         root.setLevel(logging.DEBUG)
@@ -524,6 +632,7 @@ class TestLogOperation:
 
     def test_duration_ms_rounded(self, capture_logs):
         import src.logging
+
         root = logging.getLogger("agentic_playwright")
         root.addHandler(capture_logs)
         root.setLevel(logging.DEBUG)
@@ -537,6 +646,7 @@ class TestLogOperation:
 
     def test_no_duration_when_none(self, capture_logs):
         import src.logging
+
         root = logging.getLogger("agentic_playwright")
         root.addHandler(capture_logs)
         root.setLevel(logging.DEBUG)
@@ -549,6 +659,7 @@ class TestLogOperation:
 
     def test_failure_uses_error_level(self, capture_logs):
         import src.logging
+
         root = logging.getLogger("agentic_playwright")
         root.addHandler(capture_logs)
         root.setLevel(logging.DEBUG)
@@ -568,6 +679,7 @@ class TestLogOperation:
 class TestLogTiming:
     def test_logs_successful_timing(self, capture_logs):
         import src.logging
+
         root = logging.getLogger("agentic_playwright")
         root.addHandler(capture_logs)
         root.setLevel(logging.DEBUG)
@@ -582,6 +694,7 @@ class TestLogTiming:
 
     def test_logs_failed_timing(self, capture_logs):
         import src.logging
+
         root = logging.getLogger("agentic_playwright")
         root.addHandler(capture_logs)
         root.setLevel(logging.DEBUG)
@@ -597,6 +710,7 @@ class TestLogTiming:
 
     def test_meta_dict_populated_on_success(self, capture_logs):
         import src.logging
+
         root = logging.getLogger("agentic_playwright")
         root.addHandler(capture_logs)
         root.setLevel(logging.DEBUG)
@@ -612,6 +726,7 @@ class TestLogTiming:
 
     def test_meta_dict_populated_on_failure(self, capture_logs):
         import src.logging
+
         root = logging.getLogger("agentic_playwright")
         root.addHandler(capture_logs)
         root.setLevel(logging.DEBUG)
@@ -629,6 +744,7 @@ class TestLogTiming:
 
     def test_timing_with_extra_kwargs(self, capture_logs):
         import src.logging
+
         root = logging.getLogger("agentic_playwright")
         root.addHandler(capture_logs)
         root.setLevel(logging.DEBUG)
@@ -642,6 +758,7 @@ class TestLogTiming:
 
     def test_re_raises_exception(self):
         import src.logging
+
         src.logging._initialized = True
 
         with pytest.raises(KeyError, match="missing"):
@@ -657,6 +774,7 @@ class TestLogTiming:
 class TestConvenienceFunctions:
     def test_log_browser_event(self, capture_logs):
         import src.logging
+
         root = logging.getLogger("agentic_playwright")
         root.handlers.clear()
         root.addHandler(capture_logs)
@@ -671,6 +789,7 @@ class TestConvenienceFunctions:
 
     def test_log_mcp_tool_success(self, capture_logs):
         import src.logging
+
         root = logging.getLogger("agentic_playwright")
         root.addHandler(capture_logs)
         root.setLevel(logging.DEBUG)
@@ -683,6 +802,7 @@ class TestConvenienceFunctions:
 
     def test_log_mcp_tool_failure(self, capture_logs):
         import src.logging
+
         root = logging.getLogger("agentic_playwright")
         root.addHandler(capture_logs)
         root.setLevel(logging.DEBUG)
@@ -696,6 +816,7 @@ class TestConvenienceFunctions:
 
     def test_log_mcp_tool_duration_rounded(self, capture_logs):
         import src.logging
+
         root = logging.getLogger("agentic_playwright")
         root.addHandler(capture_logs)
         root.setLevel(logging.DEBUG)
@@ -708,6 +829,7 @@ class TestConvenienceFunctions:
 
     def test_log_script_execution_success(self, capture_logs):
         import src.logging
+
         root = logging.getLogger("agentic_playwright")
         root.addHandler(capture_logs)
         root.setLevel(logging.DEBUG)
@@ -720,6 +842,7 @@ class TestConvenienceFunctions:
 
     def test_log_script_execution_failure(self, capture_logs):
         import src.logging
+
         root = logging.getLogger("agentic_playwright")
         root.addHandler(capture_logs)
         root.setLevel(logging.DEBUG)
@@ -733,6 +856,7 @@ class TestConvenienceFunctions:
 
     def test_log_script_execution_with_extra(self, capture_logs):
         import src.logging
+
         root = logging.getLogger("agentic_playwright")
         root.addHandler(capture_logs)
         root.setLevel(logging.DEBUG)
@@ -754,12 +878,14 @@ class TestConfigureFromEnv:
     def test_configures_json_debug(self):
         configure_logging_from_env()
         import src.logging
+
         assert src.logging._initialized is True
 
     @patch.dict(os.environ, {"LOG_LEVEL": "WARNING", "LOG_FORMAT": "text"})
     def test_configures_text_warning(self):
         configure_logging_from_env()
         import src.logging
+
         assert src.logging._initialized is True
 
     def test_reconfigures_after_env_change(self):
@@ -777,7 +903,6 @@ class TestConfigureFromEnv:
             assert isinstance(root.handlers[0].formatter, JSONFormatter)
 
     def test_clears_logger_cache_on_reconfigure(self):
-        import src.logging
 
         logger1 = get_logger("src.cached")
         configure_logging_from_env()

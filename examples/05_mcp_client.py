@@ -80,7 +80,9 @@ screenshot("examples/output/mcp_client_screenshot.png")
 
             # Call browse_skills
             print("\n[7] Calling browse_skills...")
-            result = await session.call_tool("browse_skills", arguments={"query": "搜索"})
+            result = await session.call_tool(
+                "browse_skills", arguments={"query": "搜索"}
+            )
             print(f"    Response:\n    {result.content[0].text}")
 
     print("\n--- Client session ended ---")
@@ -136,7 +138,9 @@ def main():
         print("Then run:")
         print("  python examples/05_mcp_client.py --stdio")
         print("  # or")
-        print(f"  python examples/05_mcp_client.py --host {args.host} --port {args.port}")
+        print(
+            f"  python examples/05_mcp_client.py --host {args.host} --port {args.port}"
+        )
         print()
         print("Running stdio mode instead (self-contained)...\n")
         asyncio.run(run_stdio_client())

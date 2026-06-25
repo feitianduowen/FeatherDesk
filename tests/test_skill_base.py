@@ -9,7 +9,6 @@ import pytest
 
 from src.skill_library.skill_base import SkillBase, SkillMeta, SkillResult
 
-
 # ---------------------------------------------------------------------------
 # SkillMeta (frozen dataclass)
 # ---------------------------------------------------------------------------

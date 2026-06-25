@@ -85,7 +85,9 @@ class SkillRegistry:
     # 注册
     # -------------------------------------------------------------------
 
-    def register(self, meta: SkillMeta, file_mapping: SkillFileMapping | None = None) -> None:
+    def register(
+        self, meta: SkillMeta, file_mapping: SkillFileMapping | None = None
+    ) -> None:
         """注册一个技能。
 
         Args:
@@ -96,7 +98,9 @@ class SkillRegistry:
         if file_mapping:
             self._file_mappings[meta.id] = file_mapping
 
-    def register_many(self, items: list[tuple[SkillMeta, SkillFileMapping | None]]) -> None:
+    def register_many(
+        self, items: list[tuple[SkillMeta, SkillFileMapping | None]]
+    ) -> None:
         """批量注册技能。"""
         for meta, mapping in items:
             self.register(meta, mapping)
@@ -151,7 +155,9 @@ class SkillRegistry:
     # 查找
     # -------------------------------------------------------------------
 
-    def search(self, query: str | None = None, url: str | None = None) -> list[SkillMeta]:
+    def search(
+        self, query: str | None = None, url: str | None = None
+    ) -> list[SkillMeta]:
         """按关键词或 URL 查找匹配的技能。
 
         Args:

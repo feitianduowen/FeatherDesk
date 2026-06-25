@@ -26,10 +26,10 @@ def run(keyword: str):
     wait_for_navigation()
 
     # 2. 填写搜索框
-    fill("#search", keyword)           # 主选择器
+    fill("#search", keyword)  # 主选择器
 
     # 3. 点击按钮
-    click("#search-btn")               # 主选择器
+    click("#search-btn")  # 主选择器
 
     # 4. 等待结果
     wait_for_navigation()

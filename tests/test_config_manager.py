@@ -103,6 +103,7 @@ class TestApplyToEnv:
 
         config.apply_to_env()
         import os
+
         assert os.environ.get("ANTHROPIC_API_KEY") == "sk-xxx"
         assert os.environ.get("USE_CLOAKBROWSER") == "false"
 
@@ -113,6 +114,7 @@ class TestApplyToEnv:
 
         config.apply_to_env()
         import os
+
         assert os.environ.get("VISION_API_KEY") == "tp-xxx"
         assert os.environ.get("USE_CLOAKBROWSER") == "true"
 

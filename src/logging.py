@@ -60,6 +60,7 @@ def _get_log_format() -> str:
 # JSON formatter for structured logging
 # ---------------------------------------------------------------------------
 
+
 class JSONFormatter(logging.Formatter):
     """Format log records as JSON lines for machine consumption."""
 
@@ -77,9 +78,7 @@ class JSONFormatter(logging.Formatter):
             log_entry["context"] = ctx
 
         # Add extra fields from the log call
-        standard_attrs = logging.LogRecord(
-            "", 0, "", 0, "", (), None
-        ).__dict__.keys()
+        standard_attrs = logging.LogRecord("", 0, "", 0, "", (), None).__dict__.keys()
         extra = {
             k: v
             for k, v in record.__dict__.items()
@@ -111,15 +110,16 @@ class JSONFormatter(logging.Formatter):
 # Human-readable formatter for development
 # ---------------------------------------------------------------------------
 
+
 class TextFormatter(logging.Formatter):
     """Format log records as human-readable text for development."""
 
     # ANSI color codes for terminal output
     COLORS = {
-        "DEBUG": "\033[36m",     # Cyan
-        "INFO": "\033[32m",      # Green
-        "WARNING": "\033[33m",   # Yellow
-        "ERROR": "\033[31m",     # Red
+        "DEBUG": "\033[36m",  # Cyan
+        "INFO": "\033[32m",  # Green
+        "WARNING": "\033[33m",  # Yellow
+        "ERROR": "\033[31m",  # Red
         "CRITICAL": "\033[35m",  # Magenta
     }
     RESET = "\033[0m"
@@ -154,9 +154,7 @@ class TextFormatter(logging.Formatter):
             context_str = f" [{', '.join(context_parts)}]"
 
         # Extra fields
-        standard_attrs = logging.LogRecord(
-            "", 0, "", 0, "", (), None
-        ).__dict__.keys()
+        standard_attrs = logging.LogRecord("", 0, "", 0, "", (), None).__dict__.keys()
         extra = {
             k: v
             for k, v in record.__dict__.items()
@@ -251,6 +249,7 @@ def get_logger(name: str) -> logging.Logger:
 # Context management for operation tracking
 # ---------------------------------------------------------------------------
 
+
 @contextmanager
 def bind_context(**kwargs: Any) -> Generator[None, None, None]:
     """Bind context variables for the duration of a block.
@@ -282,6 +281,7 @@ def clear_context() -> None:
 # ---------------------------------------------------------------------------
 # Operation logging helper
 # ---------------------------------------------------------------------------
+
 
 def log_operation(
     operation: str,
@@ -329,6 +329,7 @@ def log_operation(
 # Performance timer context manager
 # ---------------------------------------------------------------------------
 
+
 @contextmanager
 def log_timing(
     operation: str,
@@ -359,7 +360,9 @@ def log_timing(
         duration_ms = (time.monotonic() - start_time) * 1000
         meta["duration_ms"] = round(duration_ms, 2)
         meta["success"] = True
-        logger.info("Timing: %s completed in %.2fms", operation, duration_ms, extra=meta)
+        logger.info(
+            "Timing: %s completed in %.2fms", operation, duration_ms, extra=meta
+        )
     except Exception as exc:
         duration_ms = (time.monotonic() - start_time) * 1000
         meta["duration_ms"] = round(duration_ms, 2)
@@ -380,13 +383,16 @@ def log_timing(
 # Convenience functions for common logging patterns
 # ---------------------------------------------------------------------------
 
+
 def log_browser_event(event: str, **kwargs: Any) -> None:
     """Log a browser-related event."""
     logger = get_logger("agentic_playwright.browser")
     logger.info("Browser event: %s", event, extra={"event": event, **kwargs})
 
 
-def log_mcp_tool(tool_name: str, *, success: bool, duration_ms: float | None = None, **kwargs: Any) -> None:
+def log_mcp_tool(
+    tool_name: str, *, success: bool, duration_ms: float | None = None, **kwargs: Any
+) -> None:
     """Log an MCP tool invocation."""
     logger = get_logger("agentic_playwright.mcp")
     extra = {"tool": tool_name, "success": success, **kwargs}
@@ -399,7 +405,9 @@ def log_mcp_tool(tool_name: str, *, success: bool, duration_ms: float | None = N
         logger.warning("MCP tool failed: %s", tool_name, extra=extra)
 
 
-def log_script_execution(script_id: str, *, success: bool, duration_ms: float | None = None, **kwargs: Any) -> None:
+def log_script_execution(
+    script_id: str, *, success: bool, duration_ms: float | None = None, **kwargs: Any
+) -> None:
     """Log a script execution."""
     logger = get_logger("agentic_playwright.script")
     extra = {"script_id": script_id, "success": success, **kwargs}
@@ -415,6 +423,7 @@ def log_script_execution(script_id: str, *, success: bool, duration_ms: float | 
 # ---------------------------------------------------------------------------
 # Configuration from environment
 # ---------------------------------------------------------------------------
+
 
 def configure_logging_from_env() -> None:
     """Reconfigure logging based on current environment variables.

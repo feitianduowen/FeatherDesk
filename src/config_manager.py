@@ -127,7 +127,9 @@ class ConfigManager:
         if provider == "skip":
             self.set("vision.provider", "mimo")
             self.set("vision.api_key", "")
-            print("\n已跳过视觉配置。后续可通过编辑 ~/.agentic-playwright/config.yaml 添加。")
+            print(
+                "\n已跳过视觉配置。后续可通过编辑 ~/.agentic-playwright/config.yaml 添加。"
+            )
         else:
             # 2. 输入 API Key
             print()
@@ -144,7 +146,9 @@ class ConfigManager:
             }
             default_url = default_urls.get(provider, "")
             print()
-            base_url = input(f"请输入 Base URL [{default_url}]: ").strip() or default_url
+            base_url = (
+                input(f"请输入 Base URL [{default_url}]: ").strip() or default_url
+            )
 
             # 4. 输入模型名（可选）
             default_models = {
@@ -206,7 +210,9 @@ class ConfigManager:
                 os.environ["VISION_API_KEY"] = vision["api_key"]
 
         browser = self.get_browser_config()
-        os.environ["USE_CLOAKBROWSER"] = "true" if browser["engine"] == "cloakbrowser" else "false"
+        os.environ["USE_CLOAKBROWSER"] = (
+            "true" if browser["engine"] == "cloakbrowser" else "false"
+        )
         os.environ["BROWSER_HEADLESS"] = "true" if browser["headless"] else "false"
 
 

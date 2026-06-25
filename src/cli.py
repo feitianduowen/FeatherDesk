@@ -32,6 +32,7 @@ _ENV_FILE = _PROJECT_ROOT / ".env"
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _version() -> str:
     """Return package version from metadata or pyproject.toml."""
     try:
@@ -72,6 +73,7 @@ def _load_config() -> None:
     # 加载 .env（优先级更高，可覆盖 config.yaml）
     if _ENV_FILE.is_file():
         from dotenv import load_dotenv
+
         load_dotenv(_ENV_FILE, override=False)
 
 
@@ -132,6 +134,7 @@ def serve(transport: str, host: str, port: int, debug: bool) -> None:
 
     # Configure structured logging
     from src.logging import configure_logging_from_env
+
     configure_logging_from_env()
 
     # Suppress color codes on stdio (avoids garbled output in MCP clients)
@@ -210,8 +213,14 @@ def run(task: str, max_steps: int, headless: bool, slow_mo: int) -> None:
 
         # Print step-by-step progress
         for step in result.steps:
-            status = click.style("OK", fg="green") if step.success else click.style("FAIL", fg="red")
-            click.echo(f"  Step {step.step_number} [{step.state}] {status}: {step.result}")
+            status = (
+                click.style("OK", fg="green")
+                if step.success
+                else click.style("FAIL", fg="red")
+            )
+            click.echo(
+                f"  Step {step.step_number} [{step.state}] {status}: {step.result}"
+            )
 
         click.echo()
 
@@ -240,6 +249,7 @@ def run(task: str, max_steps: int, headless: bool, slow_mo: int) -> None:
 # ---------------------------------------------------------------------------
 # doctor
 # ---------------------------------------------------------------------------
+
 
 @main.command()
 @click.option(
@@ -356,7 +366,9 @@ def doctor(fix: bool) -> None:
     # ------------------------------------------------------------------
     click.echo("\n[5/7] Domain configs (domains/)")
     if _DOMAINS_DIR.is_dir():
-        yaml_files = list(_DOMAINS_DIR.glob("*.yaml")) + list(_DOMAINS_DIR.glob("*.yml"))
+        yaml_files = list(_DOMAINS_DIR.glob("*.yaml")) + list(
+            _DOMAINS_DIR.glob("*.yml")
+        )
         count = len(yaml_files)
         dom_ok = count > 0
         click.echo(f"  Directory: {_DOMAINS_DIR} {_check_mark(True)}")
@@ -366,7 +378,9 @@ def doctor(fix: bool) -> None:
                 click.echo(f"    - {yf.name}")
             passed.append("Domain configs")
         else:
-            warnings.append("No domain YAML files found in domains/. The system will work but without site-specific selectors.")
+            warnings.append(
+                "No domain YAML files found in domains/. The system will work but without site-specific selectors."
+            )
     else:
         warnings.append("domains/ directory not found.")
 
@@ -386,7 +400,9 @@ def doctor(fix: bool) -> None:
             click.echo(f"  skills.yaml {_check_mark(True)}")
             passed.append("Skill library")
         else:
-            warnings.append("skills.yaml not found in skill library. Skills will not be indexed.")
+            warnings.append(
+                "skills.yaml not found in skill library. Skills will not be indexed."
+            )
     else:
         warnings.append("Skill library directory not found.")
 
@@ -398,6 +414,7 @@ def doctor(fix: bool) -> None:
     if use_cloak:
         try:
             import cloakbrowser  # noqa: F401
+
             click.echo(f"  CloakBrowser enabled and installed {_check_mark(True)}")
             passed.append("CloakBrowser")
         except ImportError:
@@ -427,7 +444,10 @@ def doctor(fix: bool) -> None:
         click.secho("\nAll critical checks passed. Ready to go!", fg="green")
         sys.exit(0)
     else:
-        click.secho(f"\n{len(errors)} critical issue(s) found. Fix them before running.", fg="red")
+        click.secho(
+            f"\n{len(errors)} critical issue(s) found. Fix them before running.",
+            fg="red",
+        )
         sys.exit(1)
 
 
@@ -520,6 +540,7 @@ def gui(host: str, port: int, debug: bool) -> None:
     # Load .env
     if _ENV_FILE.is_file():
         from dotenv import load_dotenv
+
         load_dotenv(_ENV_FILE, override=False)
 
     try:

@@ -117,7 +117,9 @@ class TestExecuteRecovery:
         assert manager.execute_recovery(action) is True
 
     def test_wait_and_retry(self, manager):
-        action = RecoveryAction(strategy=RecoveryStrategy.WAIT_AND_RETRY, reason="test", wait_seconds=0.01)
+        action = RecoveryAction(
+            strategy=RecoveryStrategy.WAIT_AND_RETRY, reason="test", wait_seconds=0.01
+        )
         assert manager.execute_recovery(action) is True
 
     def test_dismiss_dialog(self, manager, mock_page):

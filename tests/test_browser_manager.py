@@ -14,7 +14,6 @@ from src.core.browser_manager import (
     reset_browser_manager,
 )
 
-
 # ---------------------------------------------------------------------------
 # _is_cloak_enabled
 # ---------------------------------------------------------------------------
@@ -82,7 +81,9 @@ class TestBrowserManagerPlaywright:
 
         assert page is mock_page
         assert bm.engine == "playwright"
-        mock_pw_instance.chromium.launch.assert_called_once_with(headless=True, slow_mo=500)
+        mock_pw_instance.chromium.launch.assert_called_once_with(
+            headless=True, slow_mo=500
+        )
 
     def test_get_page_before_launch(self):
         """Should raise RuntimeError if get_page called before launch."""

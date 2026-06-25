@@ -23,7 +23,9 @@ from pathlib import Path
 class TaskIntent:
     """解析后的任务意图。"""
 
-    action: str  # search, navigate, screenshot, extract, fill, paginate, login, composite
+    action: (
+        str  # search, navigate, screenshot, extract, fill, paginate, login, composite
+    )
     target: str = ""  # 目标 URL 或搜索关键词
     parameters: dict = None  # 额外参数
 
@@ -65,7 +67,16 @@ class ScriptGenerator:
     URL_SEARCH_ENGINES = ["csdn", "gitee", "bilibili", "toutiao"]
 
     # JS 方式的网站（headless 模式下元素被隐藏）
-    JS_ENGINES = ["baidu", "dangdang", "douban", "wenku", "taobao", "jd", "pdd", "weibo"]
+    JS_ENGINES = [
+        "baidu",
+        "dangdang",
+        "douban",
+        "wenku",
+        "taobao",
+        "jd",
+        "pdd",
+        "weibo",
+    ]
 
     # URL 直接搜索（不需要填写表单）
     URL_DIRECT_ENGINES = ["zhihu", "baike", "weather"]
@@ -84,6 +95,7 @@ class ScriptGenerator:
 
         try:
             import yaml
+
             with open(yaml_path, "r", encoding="utf-8") as f:
                 data = yaml.safe_load(f)
 
@@ -129,7 +141,9 @@ class ScriptGenerator:
 
         # 导航任务
         url = self._extract_url(task)
-        if url and any(kw in task_lower for kw in ["打开", "导航", "goto", "open", "访问", "去"]):
+        if url and any(
+            kw in task_lower for kw in ["打开", "导航", "goto", "open", "访问", "去"]
+        ):
             return TaskIntent(action="navigate", target=url)
 
         # 纯 URL 也视为导航
@@ -137,7 +151,10 @@ class ScriptGenerator:
             return TaskIntent(action="navigate", target=url)
 
         # 搜索任务
-        if any(kw in task_lower for kw in ["搜索", "search", "查找", "找", "查", "搜", "查询", "lookup"]):
+        if any(
+            kw in task_lower
+            for kw in ["搜索", "search", "查找", "找", "查", "搜", "查询", "lookup"]
+        ):
             keyword = self._extract_keyword(task)
             engine = self._detect_search_engine(task)
             if keyword:
@@ -152,11 +169,15 @@ class ScriptGenerator:
             return TaskIntent(action="hot_search")
 
         # 提取任务
-        if any(kw in task_lower for kw in ["提取", "extract", "获取文本", "抓取", "爬取"]):
+        if any(
+            kw in task_lower for kw in ["提取", "extract", "获取文本", "抓取", "爬取"]
+        ):
             return TaskIntent(action="extract")
 
         # 翻页任务
-        if any(kw in task_lower for kw in ["翻页", "下一页", "next page", "分页", "遍历"]):
+        if any(
+            kw in task_lower for kw in ["翻页", "下一页", "next page", "分页", "遍历"]
+        ):
             pages = self._extract_number(task, default=5)
             return TaskIntent(action="paginate", parameters={"max_pages": pages})
 
@@ -176,7 +197,9 @@ class ScriptGenerator:
 
         # 滚动任务
         if any(kw in task_lower for kw in ["滚动", "scroll", "下滑", "上滑"]):
-            direction = "down" if any(kw in task_lower for kw in ["下", "down"]) else "up"
+            direction = (
+                "down" if any(kw in task_lower for kw in ["下", "down"]) else "up"
+            )
             return TaskIntent(action="scroll", parameters={"direction": direction})
 
         # 等待任务
@@ -264,20 +287,20 @@ class ScriptGenerator:
         if engine in self.JS_ENGINES:
             return (
                 f'goto("{url}")\n'
-                f'wait_for_navigation()\n'
-                f"run_js('document.querySelector(\\\"{inp}\\\").value = \\\"{keyword}\\\"')\n"
+                f"wait_for_navigation()\n"
+                f'run_js(\'document.querySelector(\\"{inp}\\").value = \\"{keyword}\\"\')\n'
                 f"run_js('document.querySelector(\\\"{btn}\\\").click()')\n"
-                f'wait(3)\n'
+                f"wait(3)\n"
                 f'log("{name}搜索完成: {keyword}")'
             )
 
         # 表单搜索（默认）
         return (
             f'goto("{url}")\n'
-            f'wait_for_navigation()\n'
+            f"wait_for_navigation()\n"
             f'fill("{inp}", "{keyword}")\n'
             f'click("{btn}")\n'
-            f'wait_for_navigation()\n'
+            f"wait_for_navigation()\n"
             f'log("{name}搜索完成: {keyword}")'
         )
 
@@ -285,12 +308,12 @@ class ScriptGenerator:
         return 'goto("https://s.weibo.com/top/summary")\nwait_for_navigation()\nwait(3)\ntext = get_text()\nlog("微博热搜加载完成")\nprint(text[:2000])'
 
     def _gen_extract(self) -> str:
-        return '''text = get_text()
+        return """text = get_text()
 log(f"提取文本长度: {len(text)}")
-print(text[:2000])'''
+print(text[:2000])"""
 
     def _gen_paginate(self, max_pages: int) -> str:
-        return f'''for page_num in range(1, {max_pages + 1}):
+        return f"""for page_num in range(1, {max_pages + 1}):
     log(f"正在处理第 {{page_num}} 页")
     text = get_text()
     print(f"--- 第 {{page_num}} 页 ---")
@@ -301,23 +324,23 @@ print(text[:2000])'''
         break
     wait_for_navigation()
     wait(1.0)
-log("翻页完成")'''
+log("翻页完成")"""
 
     def _gen_fill(self) -> str:
-        return '''# 请根据实际页面修改选择器和值
+        return """# 请根据实际页面修改选择器和值
 # fill("#name", "张三")
 # fill("#email", "test@example.com")
 # click("#submit")
-log("表单填写模板 - 请根据实际页面修改")'''
+log("表单填写模板 - 请根据实际页面修改")"""
 
     def _gen_login(self) -> str:
-        return '''# 请根据实际网站修改选择器
+        return """# 请根据实际网站修改选择器
 # goto("https://example.com/login")
 # fill("#username", "your_username")
 # fill("#password", "your_password")
 # click("#login-btn")
 # wait_for_navigation()
-log("登录模板 - 请根据实际网站修改")'''
+log("登录模板 - 请根据实际网站修改")"""
 
     def _gen_click(self, target: str) -> str:
         return f'''result = click("{target}")
@@ -329,13 +352,13 @@ else:
 
     def _gen_scroll(self, direction: str) -> str:
         if direction == "down":
-            return '''page.evaluate("window.scrollBy(0, 500)")
+            return """page.evaluate("window.scrollBy(0, 500)")
 wait(0.5)
-log("向下滚动")'''
+log("向下滚动")"""
         else:
-            return '''page.evaluate("window.scrollBy(0, -500)")
+            return """page.evaluate("window.scrollBy(0, -500)")
 wait(0.5)
-log("向上滚动")'''
+log("向上滚动")"""
 
     def _gen_wait(self, seconds: int) -> str:
         return f'wait({seconds})\nlog("等待 {seconds} 秒")'
@@ -348,11 +371,11 @@ log("向上滚动")'''
         """从任务描述中提取搜索关键词。"""
         # 匹配 "在XXX搜索/查询YYY" 模式
         patterns = [
-            r'(?:在|到)(?:百度|google|bing|谷歌|必应|搜狗|360|当当|CSDN|Gitee|百科|头条|知乎|豆瓣|B站|微博|文库|淘宝|京东|拼多多|天气网)?(?:上)?(?:搜索|查询|查找)[:\s]*(.+)',
-            r'(?:百度|google|bing|搜狗|360|当当|CSDN|Gitee|百科|头条|知乎|豆瓣|B站|微博|文库|淘宝|京东|拼多多)?(?:搜索|查询|查找)[:\s]*(.+)',
-            r'(?:搜索|查询|查找)[:\s]*(.+)',
-            r'search\s+(?:for\s+)?(.+)',
-            r'找[:\s]*(.+)',
+            r"(?:在|到)(?:百度|google|bing|谷歌|必应|搜狗|360|当当|CSDN|Gitee|百科|头条|知乎|豆瓣|B站|微博|文库|淘宝|京东|拼多多|天气网)?(?:上)?(?:搜索|查询|查找)[:\s]*(.+)",
+            r"(?:百度|google|bing|搜狗|360|当当|CSDN|Gitee|百科|头条|知乎|豆瓣|B站|微博|文库|淘宝|京东|拼多多)?(?:搜索|查询|查找)[:\s]*(.+)",
+            r"(?:搜索|查询|查找)[:\s]*(.+)",
+            r"search\s+(?:for\s+)?(.+)",
+            r"找[:\s]*(.+)",
         ]
 
         for pattern in patterns:
@@ -360,22 +383,32 @@ log("向上滚动")'''
             if match:
                 keyword = match.group(1).strip()
                 # 清理尾部：去掉标点和"返回..."部分
-                keyword = re.sub(r'[，。,.!?！？]$', '', keyword)
-                keyword = re.sub(r'[，,]\s*返回.*$', '', keyword)
-                keyword = re.sub(r'[，,]\s*并.*$', '', keyword)
+                keyword = re.sub(r"[，。,.!?！？]$", "", keyword)
+                keyword = re.sub(r"[，,]\s*返回.*$", "", keyword)
+                keyword = re.sub(r"[，,]\s*并.*$", "", keyword)
                 if keyword:
                     return keyword
 
         # 降级：去掉常见动词前缀
-        prefixes = ["帮我在百度搜索", "在百度搜索", "帮我搜索", "百度搜索",
-                     "search for", "search", "搜索", "查找", "找", "查"]
+        prefixes = [
+            "帮我在百度搜索",
+            "在百度搜索",
+            "帮我搜索",
+            "百度搜索",
+            "search for",
+            "search",
+            "搜索",
+            "查找",
+            "找",
+            "查",
+        ]
         task_lower_stripped = task.lower().strip()
         for prefix in prefixes:
             if task_lower_stripped.startswith(prefix):
-                keyword = task[len(prefix):].strip()
-                keyword = re.sub(r'[，。,.!?！？]$', '', keyword)
-                keyword = re.sub(r'[，,]\s*返回.*$', '', keyword)
-                keyword = re.sub(r'[，,]\s*并.*$', '', keyword)
+                keyword = task[len(prefix) :].strip()
+                keyword = re.sub(r"[，。,.!?！？]$", "", keyword)
+                keyword = re.sub(r"[，,]\s*返回.*$", "", keyword)
+                keyword = re.sub(r"[，,]\s*并.*$", "", keyword)
                 if keyword:
                     return keyword
 
@@ -384,14 +417,16 @@ log("向上滚动")'''
     def _extract_url(self, task: str) -> str | None:
         """从任务描述中提取 URL。"""
         # 匹配完整 URL
-        url_pattern = r'https?://[\w\-./?=&%#+~:@!$&\'()*+,;]+'
+        url_pattern = r"https?://[\w\-./?=&%#+~:@!$&\'()*+,;]+"
         match = re.search(url_pattern, task)
         if match:
             url = match.group(0).rstrip(".,;:!?")
             return url
 
         # 匹配域名
-        domain_pattern = r'(?:^|\s)([\w-]+\.(com|cn|org|net|io|dev|cc))(?:\s|$|[，。,.])'
+        domain_pattern = (
+            r"(?:^|\s)([\w-]+\.(com|cn|org|net|io|dev|cc))(?:\s|$|[，。,.])"
+        )
         match = re.search(domain_pattern, task)
         if match:
             return f"https://{match.group(1)}"
@@ -441,7 +476,7 @@ log("向上滚动")'''
 
     def _extract_number(self, task: str, default: int = 5) -> int:
         """从任务描述中提取数字。"""
-        match = re.search(r'(\d+)\s*(?:页|个|次|步|秒)', task)
+        match = re.search(r"(\d+)\s*(?:页|个|次|步|秒)", task)
         if match:
             return int(match.group(1))
         return default
@@ -454,11 +489,11 @@ log("向上滚动")'''
             return match.group(1)
 
         # 匹配 "点击XXX" 模式
-        match = re.search(r'点击[:\s]*(.+)', task)
+        match = re.search(r"点击[:\s]*(.+)", task)
         if match:
             target = match.group(1).strip()
             # 如果是纯文本，用 text= 选择器
-            if not target.startswith(('#', '.', '/', '[')):
+            if not target.startswith(("#", ".", "/", "[")):
                 return f"text={target}"
             return target
 

@@ -102,7 +102,9 @@ class ScriptStore:
     def __init__(self, store_dir: str | Path | None = None) -> None:
         self._store = get_script_store(store_dir=store_dir)
 
-    def save(self, task: str, script: str, tags: list[str] | None = None) -> ScriptRecord:
+    def save(
+        self, task: str, script: str, tags: list[str] | None = None
+    ) -> ScriptRecord:
         """保存脚本。"""
         return self._store.save(task, script, tags)
 

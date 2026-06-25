@@ -2,13 +2,11 @@
 
 from __future__ import annotations
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
-import pytest
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 
 from src.layer_1.actions import do_click, do_fill, do_goto, do_screenshot
-
 
 # ---------------------------------------------------------------------------
 # do_goto
@@ -23,7 +21,9 @@ class TestDoGoto:
         result = do_goto(mock_page, "https://example.com")
         assert "导航成功" in result
         assert "200" in result
-        mock_page.goto.assert_called_once_with("https://example.com", wait_until="domcontentloaded")
+        mock_page.goto.assert_called_once_with(
+            "https://example.com", wait_until="domcontentloaded"
+        )
 
     def test_timeout(self, mock_page):
         """Should handle PlaywrightTimeoutError gracefully."""
@@ -134,7 +134,9 @@ class TestDoScreenshot:
         """Should call page.screenshot and return the path."""
         result = do_screenshot(mock_page, "screenshots/test.png")
         assert result == "screenshots/test.png"
-        mock_page.screenshot.assert_called_once_with(path="screenshots/test.png", full_page=True)
+        mock_page.screenshot.assert_called_once_with(
+            path="screenshots/test.png", full_page=True
+        )
 
     @patch("src.layer_1.actions.os.makedirs")
     def test_screenshot_creates_dir(self, makedirs, mock_page):

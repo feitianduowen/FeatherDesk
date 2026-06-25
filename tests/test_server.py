@@ -6,7 +6,6 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
@@ -37,6 +36,7 @@ def mock_bm():
 class TestPing:
     def test_ping_returns_pong(self):
         from src.server import ping
+
         assert ping() == "pong"
 
 
@@ -49,6 +49,7 @@ class TestBrowserLaunch:
     @patch("src.server.get_browser_manager")
     def test_already_running(self, mock_get_bm):
         from src.server import browser_launch
+
         bm = MagicMock()
         bm.is_alive.return_value = True
         mock_get_bm.return_value = bm
@@ -59,6 +60,7 @@ class TestBrowserLaunch:
     @patch.dict("os.environ", {"BROWSER_HEADLESS": "true"})
     def test_launch_success(self, mock_get_bm):
         from src.server import browser_launch
+
         bm = MagicMock()
         bm.is_alive.return_value = False
         page = MagicMock()
@@ -71,6 +73,7 @@ class TestBrowserLaunch:
     @patch("src.server.get_browser_manager")
     def test_launch_failure(self, mock_get_bm):
         from src.server import browser_launch
+
         bm = MagicMock()
         bm.is_alive.return_value = False
         bm.launch.side_effect = RuntimeError("no browser")
@@ -88,6 +91,7 @@ class TestScreenshot:
     @patch("src.server.get_browser_manager")
     def test_screenshot_no_browser(self, mock_get_bm):
         from src.server import screenshot
+
         bm = MagicMock()
         bm.get_page.side_effect = RuntimeError("not launched")
         mock_get_bm.return_value = bm
@@ -98,6 +102,7 @@ class TestScreenshot:
     @patch("src.server.get_browser_manager")
     def test_screenshot_success(self, mock_get_bm, mock_do_ss, mock_bm):
         from src.server import screenshot
+
         mock_get_bm.return_value = mock_bm
         result = screenshot("test.png")
         assert "saved" in result.lower() or "截图" in result
@@ -196,6 +201,7 @@ class TestRunScript:
     @patch("src.server.get_browser_manager")
     def test_no_browser(self, mock_get_bm, mock_init):
         from src.server import run_script
+
         bm = MagicMock()
         bm.is_alive.return_value = False
         mock_get_bm.return_value = bm
@@ -206,17 +212,15 @@ class TestRunScript:
     @patch("src.server._init_script_engine")
     @patch("src.server.get_browser_manager")
     def test_success(self, mock_get_bm, mock_init):
-        from src.server import run_script
         from src.core.script_engine import ScriptResult
+        from src.server import run_script
 
         bm = MagicMock()
         bm.is_alive.return_value = True
         mock_get_bm.return_value = bm
 
         engine = MagicMock()
-        engine.execute.return_value = ScriptResult(
-            success=True, output="hello\n"
-        )
+        engine.execute.return_value = ScriptResult(success=True, output="hello\n")
         mock_init.return_value = engine
 
         result = run_script("print('hello')")
@@ -226,8 +230,8 @@ class TestRunScript:
     @patch("src.server._init_script_engine")
     @patch("src.server.get_browser_manager")
     def test_failure(self, mock_get_bm, mock_init):
-        from src.server import run_script
         from src.core.script_engine import ScriptResult
+        from src.server import run_script
 
         bm = MagicMock()
         bm.is_alive.return_value = True
@@ -252,6 +256,7 @@ class TestAnalyzePage:
     @patch("src.server.get_browser_manager")
     def test_no_browser(self, mock_get_bm):
         from src.server import analyze_page
+
         bm = MagicMock()
         bm.is_alive.return_value = False
         mock_get_bm.return_value = bm
@@ -262,8 +267,8 @@ class TestAnalyzePage:
     @patch("src.core.vision.get_vision_module")
     @patch("src.server.get_browser_manager")
     def test_success(self, mock_get_bm, mock_get_vision):
+        from src.core.vision import ElementInfo, PageAnalysis
         from src.server import analyze_page
-        from src.core.vision import PageAnalysis, ElementInfo
 
         bm = MagicMock()
         bm.is_alive.return_value = True
@@ -273,7 +278,9 @@ class TestAnalyzePage:
         vision.analyze_page.return_value = PageAnalysis(
             summary="登录页面",
             elements=[
-                ElementInfo(description="登录按钮", x=100, y=200, suggested_selector="#login"),
+                ElementInfo(
+                    description="登录按钮", x=100, y=200, suggested_selector="#login"
+                ),
             ],
             suggested_actions=["点击登录"],
         )
@@ -285,8 +292,9 @@ class TestAnalyzePage:
 
     @patch("src.server.get_browser_manager")
     def test_no_api_key(self, mock_get_bm):
-        from src.server import analyze_page
         import os
+
+        from src.server import analyze_page
 
         bm = MagicMock()
         bm.is_alive.return_value = True
@@ -308,6 +316,7 @@ class TestRunTask:
     @patch("src.server.get_browser_manager")
     def test_no_browser(self, mock_get_bm):
         from src.server import run_task
+
         bm = MagicMock()
         bm.is_alive.return_value = False
         mock_get_bm.return_value = bm
@@ -318,8 +327,8 @@ class TestRunTask:
     @patch("src.core.agent_loop.run_task")
     @patch("src.server.get_browser_manager")
     def test_success(self, mock_get_bm, mock_run_task):
+        from src.core.agent_loop import AgentState, AgentStep, AgentTaskResult
         from src.server import run_task
-        from src.core.agent_loop import AgentTaskResult, AgentStep, AgentState
 
         bm = MagicMock()
         bm.is_alive.return_value = True
@@ -329,8 +338,15 @@ class TestRunTask:
             success=True,
             task="测试任务",
             steps=[
-                AgentStep(step_number=1, state=AgentState.OBSERVE, result="页面: 测试", success=True),
-                AgentStep(step_number=2, state=AgentState.ACT, result="执行成功", success=True),
+                AgentStep(
+                    step_number=1,
+                    state=AgentState.OBSERVE,
+                    result="页面: 测试",
+                    success=True,
+                ),
+                AgentStep(
+                    step_number=2, state=AgentState.ACT, result="执行成功", success=True
+                ),
             ],
             final_url="https://example.com",
             output="done",
@@ -343,8 +359,8 @@ class TestRunTask:
     @patch("src.core.agent_loop.run_task")
     @patch("src.server.get_browser_manager")
     def test_failure(self, mock_get_bm, mock_run_task):
+        from src.core.agent_loop import AgentState, AgentStep, AgentTaskResult
         from src.server import run_task
-        from src.core.agent_loop import AgentTaskResult, AgentStep, AgentState
 
         bm = MagicMock()
         bm.is_alive.return_value = True
@@ -354,7 +370,13 @@ class TestRunTask:
             success=False,
             task="测试任务",
             steps=[
-                AgentStep(step_number=1, state=AgentState.ACT, result="执行失败", success=False, error="boom"),
+                AgentStep(
+                    step_number=1,
+                    state=AgentState.ACT,
+                    result="执行失败",
+                    success=False,
+                    error="boom",
+                ),
             ],
             error="任务未完成",
         )

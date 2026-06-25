@@ -38,6 +38,7 @@ def _import_cloakbrowser():
     """Lazy-import cloakbrowser. Raises ImportError if not installed."""
     try:
         import cloakbrowser
+
         return cloakbrowser
     except ImportError:
         raise ImportError(
@@ -96,10 +97,15 @@ class BrowserManager:
         )
         bus.emit(event)
         if event.cancelled:
-            raise RuntimeError(event.metadata.get("cancel_reason", "Browser launch cancelled by hook"))
+            raise RuntimeError(
+                event.metadata.get("cancel_reason", "Browser launch cancelled by hook")
+            )
 
         self._engine = "playwright"
-        logger.info("Starting Playwright engine", extra={"headless": headless, "slow_mo": slow_mo})
+        logger.info(
+            "Starting Playwright engine",
+            extra={"headless": headless, "slow_mo": slow_mo},
+        )
         self._playwright = sync_playwright().start()
         self._browser = self._playwright.chromium.launch(
             headless=headless,
@@ -128,11 +134,18 @@ class BrowserManager:
         event = Event(
             name=EVENT_BROWSER_LAUNCH,
             phase=Phase.BEFORE,
-            data={"engine": "cloakbrowser", "headless": headless, "humanize": humanize, "proxy": proxy},
+            data={
+                "engine": "cloakbrowser",
+                "headless": headless,
+                "humanize": humanize,
+                "proxy": proxy,
+            },
         )
         bus.emit(event)
         if event.cancelled:
-            raise RuntimeError(event.metadata.get("cancel_reason", "Browser launch cancelled by hook"))
+            raise RuntimeError(
+                event.metadata.get("cancel_reason", "Browser launch cancelled by hook")
+            )
 
         cloakbrowser = _import_cloakbrowser()
         self._engine = "cloakbrowser"
@@ -151,12 +164,19 @@ class BrowserManager:
 
         self._browser = cloakbrowser.launch(**launch_kwargs)
         self._page = self._browser.new_page()
-        log_browser_event("launched", engine="cloakbrowser", headless=headless, humanize=humanize)
+        log_browser_event(
+            "launched", engine="cloakbrowser", headless=headless, humanize=humanize
+        )
 
         after_event = Event(
             name=EVENT_BROWSER_LAUNCH,
             phase=Phase.AFTER,
-            data={"engine": "cloakbrowser", "headless": headless, "humanize": humanize, "proxy": proxy},
+            data={
+                "engine": "cloakbrowser",
+                "headless": headless,
+                "humanize": humanize,
+                "proxy": proxy,
+            },
             result=self._page,
         )
         bus.emit(after_event)
@@ -172,9 +192,7 @@ class BrowserManager:
             RuntimeError: 浏览器尚未启动时抛出。
         """
         if self._page is None:
-            raise RuntimeError(
-                "浏览器尚未启动，请先调用 launch() 方法。"
-            )
+            raise RuntimeError("浏览器尚未启动，请先调用 launch() 方法。")
         return self._page
 
     def close(self) -> None:

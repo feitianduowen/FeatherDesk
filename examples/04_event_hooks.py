@@ -23,17 +23,15 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from src.core.browser_manager import get_browser_manager, reset_browser_manager
 from src.core.event_bus import (
     EVENT_BROWSER_LAUNCH,
-    EVENT_BROWSER_CLOSE,
     EVENT_CLICK,
     EVENT_FILL,
     EVENT_GOTO,
     EVENT_SCREENSHOT,
     Event,
-    Phase,
     get_event_bus,
     reset_event_bus,
 )
-from src.layer_1.actions import do_goto, do_click, do_fill, do_screenshot
+from src.layer_1.actions import do_click, do_fill, do_goto, do_screenshot
 
 
 def main():
@@ -71,8 +69,16 @@ def main():
     def count_clicks(event: Event):
         nonlocal click_count
         click_count += 1
-        success = event.result.get("success", False) if isinstance(event.result, dict) else False
-        selector = event.result.get("used_selector", "?") if isinstance(event.result, dict) else "?"
+        success = (
+            event.result.get("success", False)
+            if isinstance(event.result, dict)
+            else False
+        )
+        selector = (
+            event.result.get("used_selector", "?")
+            if isinstance(event.result, dict)
+            else "?"
+        )
         print(f"  [HOOK] Click #{click_count}: selector={selector}, success={success}")
 
     # --- Hook 4: One-shot hook (fires once then auto-removes) ---
@@ -119,7 +125,7 @@ def main():
     do_goto(page, "https://httpbin.org/html")
 
     # --- Show hook counts ---
-    print(f"\n[9] Hook summary:")
+    print("\n[9] Hook summary:")
     print(f"    Total clicks recorded: {click_count}")
     print(f"    Registered events: {bus.list_events()}")
     print(f"    Total hooks: {bus.hook_count()}")

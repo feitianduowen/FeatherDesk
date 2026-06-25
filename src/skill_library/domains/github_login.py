@@ -20,9 +20,9 @@ def run(username: str, password: str):
         - 如果启用了 2FA，需要额外处理验证码
     """
     goto("https://github.com/login")
-    fill("#login_field", username)    # 用户名输入框
-    fill("#password", password)       # 密码输入框
-    click("input[name='commit']")     # Sign in 按钮
+    fill("#login_field", username)  # 用户名输入框
+    fill("#password", password)  # 密码输入框
+    click("input[name='commit']")  # Sign in 按钮
     wait_for_navigation()
     log(f"GitHub 登录完成: {username}")
 

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from unittest.mock import MagicMock, patch, PropertyMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -25,7 +25,6 @@ from src.layer_2.controls import (
     wait_for_element,
     wait_for_navigation,
 )
-
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -182,6 +181,7 @@ class TestSmartLogin:
                 "submit": {"css": ["#submit"]},
             },
         )
+
         # Return different selectors based on element name
         def get_sels(config, name):
             return config.locators[name].css

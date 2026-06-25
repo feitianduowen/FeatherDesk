@@ -13,7 +13,6 @@ from src.core.script_engine import (
     reset_script_engine,
 )
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
@@ -228,10 +227,12 @@ class TestCustomFunctions:
 
     def test_register_multiple_functions(self, engine):
         """Should allow batch registering functions."""
-        engine.register_functions({
-            "add": lambda a, b: a + b,
-            "multiply": lambda a, b: a * b,
-        })
+        engine.register_functions(
+            {
+                "add": lambda a, b: a + b,
+                "multiply": lambda a, b: a * b,
+            }
+        )
         result = engine.execute("print(add(2, 3))\nprint(multiply(4, 5))")
         assert result.success is True
         assert "5" in result.output
