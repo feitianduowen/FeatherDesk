@@ -29,11 +29,10 @@ Usage:
 from __future__ import annotations
 
 import time
-import traceback
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Callable, Generator
-from contextlib import contextmanager
 
 from src.logging import get_logger
 

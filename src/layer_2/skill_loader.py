@@ -6,14 +6,12 @@ and provides search/lookup APIs for the MCP server and script engine.
 
 from __future__ import annotations
 
-import os
 from pathlib import Path
 from typing import Dict, List, Optional
 
 import yaml
 
 from src.layer_2.skill_schema import SkillConfig
-
 
 # ---------------------------------------------------------------------------
 # 公开 API

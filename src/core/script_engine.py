@@ -19,7 +19,6 @@ from src.core.browser_manager import get_browser_manager
 from src.core.event_bus import EVENT_SCRIPT_EXECUTE, Event, Phase, get_event_bus
 from src.layer_1.actions import do_click, do_fill, do_goto, do_screenshot
 
-
 # ---------------------------------------------------------------------------
 # 数据模型
 # ---------------------------------------------------------------------------

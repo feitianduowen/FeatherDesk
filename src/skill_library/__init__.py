@@ -9,5 +9,27 @@
 #
 # 数据来源: skills.yaml
 
-from .registry import SkillDetail, SkillFileMapping, SkillRegistry, get_skill_registry, reset_skill_registry
-from .skill_base import SkillBase, SkillMeta, SkillResult
+from .registry import (
+    SkillDetail as SkillDetail,
+)
+from .registry import (
+    SkillFileMapping as SkillFileMapping,
+)
+from .registry import (
+    SkillRegistry as SkillRegistry,
+)
+from .registry import (
+    get_skill_registry as get_skill_registry,
+)
+from .registry import (
+    reset_skill_registry as reset_skill_registry,
+)
+from .skill_base import (
+    SkillBase as SkillBase,
+)
+from .skill_base import (
+    SkillMeta as SkillMeta,
+)
+from .skill_base import (
+    SkillResult as SkillResult,
+)

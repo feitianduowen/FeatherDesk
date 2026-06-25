@@ -10,11 +10,8 @@ from __future__ import annotations
 import base64
 import os
 from dataclasses import dataclass, field
-from pathlib import Path
-from typing import Any, Optional
 
 from src.core.browser_manager import get_browser_manager
-
 
 # ---------------------------------------------------------------------------
 # 数据模型

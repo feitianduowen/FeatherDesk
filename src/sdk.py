@@ -20,7 +20,6 @@ from src.core.agent_loop import AgentLoop as _AgentLoop
 from src.core.agent_loop import AgentTaskResult
 from src.core.browser_manager import get_browser_manager, reset_browser_manager
 from src.core.script_store import ScriptRecord, get_script_store
-from src.core.vision import PageAnalysis
 
 
 class AgentLoop:

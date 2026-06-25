@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import os
 
-from playwright.sync_api import sync_playwright, Page
+from playwright.sync_api import Page, sync_playwright
 
 from src.core.event_bus import (
     EVENT_BROWSER_CLOSE,

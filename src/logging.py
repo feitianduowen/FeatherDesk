@@ -24,7 +24,6 @@ import time
 from contextlib import contextmanager
 from contextvars import ContextVar
 from datetime import datetime, timezone
-from pathlib import Path
 from typing import Any, Generator
 
 # ---------------------------------------------------------------------------

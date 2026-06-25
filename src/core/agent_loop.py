@@ -21,12 +21,10 @@ Agent 循环引擎 —— 自然语言驱动的自主浏览器操作。
 
 from __future__ import annotations
 
-import json
-import os
 import time
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Callable
+from typing import Callable
 
 from src.core.browser_manager import get_browser_manager
 from src.core.event_bus import (
@@ -42,9 +40,9 @@ from src.core.event_bus import (
     get_event_bus,
 )
 from src.core.experience import ExperienceManager, get_experience_manager
-from src.core.script_engine import ScriptResult, get_script_engine
+from src.core.script_engine import get_script_engine
 from src.core.script_generator import ScriptGenerator
-from src.core.vision import PageAnalysis, VisionModule, get_vision_module
+from src.core.vision import VisionModule, get_vision_module
 from src.layer_2.controls import get_controls_exports
 from src.logging import bind_context, get_logger, log_timing
 from src.skill_library.registry import SkillRegistry, get_skill_registry

@@ -10,7 +10,8 @@ import os
 import time
 from typing import List
 
-from playwright.sync_api import Page, TimeoutError as PlaywrightTimeoutError
+from playwright.sync_api import Page
+from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 
 from src.core.event_bus import (
     EVENT_CLICK,

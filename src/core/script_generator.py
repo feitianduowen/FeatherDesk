@@ -17,7 +17,6 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
 
 
 @dataclass
@@ -254,7 +253,7 @@ class ScriptGenerator:
             elif engine == "baike":
                 return f'goto("https://baike.baidu.com/item/{keyword}")\nwait_for_navigation()\nwait(3)\nlog("百度百科查询完成: {keyword}")'
             elif engine == "weather":
-                return f'goto("https://www.weather.com.cn/weather1d/101010100.shtml")\nwait_for_navigation()\nwait(3)\nlog("天气查询完成")'
+                return 'goto("https://www.weather.com.cn/weather1d/101010100.shtml")\nwait_for_navigation()\nwait(3)\nlog("天气查询完成")'
 
         # 从 YAML 加载选择器
         selectors = self._load_selectors(engine)

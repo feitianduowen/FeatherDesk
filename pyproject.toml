@@ -88,3 +88,7 @@ line-length = 88
 [tool.ruff.lint]
 select = ["E", "F", "I", "W"]
 ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+# 技能库脚本模板使用沙箱注入的函数（goto/click/fill 等），静态分析无法识别
+"src/skill_library/**/*.py" = ["F821"]

@@ -10,7 +10,12 @@ Layer 2 — 控件层（Controls）。
 from __future__ import annotations
 
 import time
-from typing import Any, Dict, List, Optional
+
+# ---------------------------------------------------------------------------
+# 路径常量
+# ---------------------------------------------------------------------------
+from pathlib import Path
+from typing import Any, Dict
 
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 
@@ -28,13 +33,6 @@ from src.core.event_bus import (
 from src.layer_1.actions import do_click, do_fill, do_goto, do_screenshot
 from src.layer_3.config_updater import update_selector_priority
 from src.layer_3.domain_loader import get_element_selectors, load_domain
-
-
-# ---------------------------------------------------------------------------
-# 路径常量
-# ---------------------------------------------------------------------------
-
-from pathlib import Path
 
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 _DOMAINS_DIR = str(_PROJECT_ROOT / "domains")

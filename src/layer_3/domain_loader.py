@@ -8,7 +8,6 @@ from typing import Dict, List, Optional
 import yaml
 from pydantic import BaseModel
 
-
 # ---------------------------------------------------------------------------
 # Pydantic 数据模型
 # ---------------------------------------------------------------------------

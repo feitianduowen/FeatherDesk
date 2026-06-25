@@ -131,9 +131,8 @@ def serve(transport: str, host: str, port: int, debug: bool) -> None:
         os.environ["LOG_LEVEL"] = "DEBUG"
 
     # Configure structured logging
-    from src.logging import configure_logging_from_env, get_logger
+    from src.logging import configure_logging_from_env
     configure_logging_from_env()
-    logger = get_logger(__name__)
 
     # Suppress color codes on stdio (avoids garbled output in MCP clients)
     if transport == "stdio":
@@ -217,9 +216,9 @@ def run(task: str, max_steps: int, headless: bool, slow_mo: int) -> None:
         click.echo()
 
         if result.success:
-            click.secho(f"Task completed.", fg="green")
+            click.secho("Task completed.", fg="green")
         else:
-            click.secho(f"Task failed.", fg="red")
+            click.secho("Task failed.", fg="red")
 
         if result.output:
             click.echo(f"\nOutput:\n{result.output}")
@@ -534,7 +533,7 @@ def gui(host: str, port: int, debug: bool) -> None:
         sys.exit(1)
 
     click.echo(f"Starting GUI at http://{host}:{port}")
-    click.echo(f"Press Ctrl+C to stop")
+    click.echo("Press Ctrl+C to stop")
 
     app.run(host=host, port=port, debug=debug)
 

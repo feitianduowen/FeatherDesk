@@ -15,24 +15,20 @@
 
 from __future__ import annotations
 
-import json
 import os
 import sys
-import threading
-import time
 from pathlib import Path
 
 # 添加项目根目录到路径
 _project_root = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(_project_root))
 
-from flask import Flask, render_template_string, request, jsonify
+from flask import Flask, jsonify, render_template_string, request  # noqa: E402
 
-from src.core.agent_loop import AgentLoop, AgentTaskResult
-from src.core.browser_manager import get_browser_manager
-from src.core.script_store import get_script_store
-from src.skill_library.registry import get_skill_registry
-
+from src.core.agent_loop import AgentLoop  # noqa: E402
+from src.core.browser_manager import get_browser_manager  # noqa: E402
+from src.core.script_store import get_script_store  # noqa: E402
+from src.skill_library.registry import get_skill_registry  # noqa: E402
 
 app = Flask(__name__)
 
@@ -514,8 +510,8 @@ def api_run():
     Playwright sync API 不支持跨线程调用，所以每个请求
     必须在同一线程内完成 launch → run → close 全流程。
     """
-    from src.core.script_engine import reset_script_engine
     from src.core.browser_manager import reset_browser_manager
+    from src.core.script_engine import reset_script_engine
 
     data = request.json
     task = data.get("task", "")
@@ -604,7 +600,7 @@ def api_skills():
             for s in skills
         ])
 
-    except Exception as exc:
+    except Exception:
         return jsonify([])
 
 
@@ -629,7 +625,7 @@ def api_scripts():
             for s in scripts
         ])
 
-    except Exception as exc:
+    except Exception:
         return jsonify([])
 
 
@@ -688,7 +684,7 @@ def main():
     args = parser.parse_args()
 
     print(f"Starting GUI: http://{args.host}:{args.port}")
-    print(f"Press Ctrl+C to stop")
+    print("Press Ctrl+C to stop")
 
     app.run(host=args.host, port=args.port, debug=args.debug)
 

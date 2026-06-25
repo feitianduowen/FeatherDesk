@@ -13,7 +13,7 @@ def run(username: str = ""):
         goto("https://github.com")
     wait_for_navigation()
     text = get_text()
-    log(f"GitHub 仓库页面加载完成")
+    log("GitHub 仓库页面加载完成")
     print(text[:2000])
 
 

@@ -13,16 +13,13 @@ Playwright's sync_api.
 from __future__ import annotations
 
 import os
-import time
 from pathlib import Path
 
 from mcp.server.fastmcp import FastMCP
 
 from src.core.browser_manager import get_browser_manager
-from src.core.script_engine import ScriptResult, get_script_engine
+from src.core.script_engine import get_script_engine
 from src.layer_2.controls import get_controls_exports
-from src.layer_3.domain_loader import load_domain, get_element_selectors
-from src.layer_3.config_updater import update_selector_priority
 from src.logging import get_logger, log_mcp_tool, log_timing
 
 # Module logger
