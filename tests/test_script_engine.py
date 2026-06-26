@@ -209,6 +209,20 @@ class TestBrowserPrimitives:
         assert result.success is True
         assert "Example" in result.output
 
+    def test_uses_injected_browser_manager(self):
+        """Should support the legacy ScriptEngine(browser_manager) call style."""
+        bm = MagicMock()
+        page = MagicMock()
+        page.url = "https://injected.example"
+        bm.get_page.return_value = page
+
+        engine = ScriptEngine(bm)
+        result = engine.execute("print(get_url())")
+
+        assert result.success is True
+        assert "https://injected.example" in result.output
+        bm.get_page.assert_called_once()
+
 
 # ---------------------------------------------------------------------------
 # Custom function registration

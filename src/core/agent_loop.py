@@ -509,6 +509,20 @@ class AgentLoop:
         """
         import re
 
+        if skill_id == "domain/github_login":
+            credentials = self._extract_login_credentials(task)
+            if not credentials:
+                return (
+                    f"{source_code}\n\n"
+                    "raise ValueError('GitHub login requires username and password')"
+                )
+            username, password = credentials
+            return (
+                f"{source_code}\n\n# 自动调用\n"
+                f"run({json.dumps(username, ensure_ascii=False)}, "
+                f"{json.dumps(password, ensure_ascii=False)})"
+            )
+
         # 提取关键词
         keyword = self._script_generator._extract_keyword(task)
         if not keyword:
@@ -524,6 +538,31 @@ class AgentLoop:
         # 追加调用语句
         call_script = f"{source_code}\n\n# 自动调用\nrun({json.dumps(keyword, ensure_ascii=False)})"
         return call_script
+
+    @staticmethod
+    def _extract_login_credentials(task: str) -> tuple[str, str] | None:
+        import re
+
+        def find(patterns: list[str]) -> str | None:
+            for pattern in patterns:
+                match = re.search(pattern, task, re.IGNORECASE)
+                if match:
+                    return match.group(1).strip().strip("'\"`")
+            return None
+
+        username = find(
+            [
+                r"(?:用户名|用户|账号|账户|名称|邮箱|username|user|account|email)\s*(?:是|为|:|：|=)?\s*['\"]?([^'\"\s,，;；。]+)",
+            ]
+        )
+        password = find(
+            [
+                r"(?:密码|口令|password|pass)\s*(?:是|为|:|：|=)?\s*['\"]?([^'\"\s,，;；。]+)",
+            ]
+        )
+        if username and password:
+            return username, password
+        return None
 
     def _select_best_skill(self, skills: list[Any], task: str) -> Any:
         """选择与任务最具体匹配的技能。
