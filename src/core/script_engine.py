@@ -88,7 +88,8 @@ _SAFE_BUILTINS: dict[str, Any] = {
 class ScriptEngine:
     """在受限命名空间中执行 AI 生成的 Python 脚本。"""
 
-    def __init__(self) -> None:
+    def __init__(self, browser_manager: Any | None = None) -> None:
+        self._browser_manager = browser_manager
         self._extra_globals: dict[str, Any] = {}
 
     def register_function(self, name: str, func: Callable) -> None:
@@ -103,6 +104,11 @@ class ScriptEngine:
     def register_functions(self, functions: dict[str, Callable]) -> None:
         """批量注册函数到脚本命名空间。"""
         self._extra_globals.update(functions)
+
+    def _get_browser_manager(self):
+        if self._browser_manager is not None:
+            return self._browser_manager
+        return get_browser_manager()
 
     def execute(self, script_code: str) -> ScriptResult:
         """在受限命名空间中执行脚本。
@@ -198,25 +204,25 @@ class ScriptEngine:
 
         # 安全的 screenshot（自动收集路径）
         def safe_screenshot(path: str) -> str:
-            page = get_browser_manager().get_page()
+            page = self._get_browser_manager().get_page()
             result = do_screenshot(page, path)
             screenshots.append(result)
             return result
 
         # 安全的 goto
         def safe_goto(url: str) -> str:
-            page = get_browser_manager().get_page()
+            page = self._get_browser_manager().get_page()
             return do_goto(page, url)
 
         # 安全的 click（支持选择器列表）
         def safe_click(selector: str, *fallbacks: str) -> dict:
-            page = get_browser_manager().get_page()
+            page = self._get_browser_manager().get_page()
             selector_list = [selector] + list(fallbacks)
             return do_click(page, selector_list)
 
         # 安全的 fill（支持选择器列表）
         def safe_fill(selector: str, value: str, *fallbacks: str) -> dict:
-            page = get_browser_manager().get_page()
+            page = self._get_browser_manager().get_page()
             selector_list = [selector] + list(fallbacks)
             return do_fill(page, selector_list, value)
 
@@ -235,8 +241,8 @@ class ScriptEngine:
         ns["url_quote"] = quote_plus
 
         # 注入页面状态函数
-        ns["get_url"] = lambda: get_browser_manager().get_page().url
-        ns["get_title"] = lambda: get_browser_manager().get_page().title()
+        ns["get_url"] = lambda: self._get_browser_manager().get_page().url
+        ns["get_title"] = lambda: self._get_browser_manager().get_page().title()
 
         # 注册用户自定义函数（控件层等）
         ns.update(self._extra_globals)

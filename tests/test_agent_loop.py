@@ -171,6 +171,34 @@ class TestUrlExtraction:
         assert gen._extract_url("帮我搜索东西") is None
 
 
+class TestGitHubLoginScript:
+    def test_extract_login_credentials_english(self):
+        credentials = AgentLoop._extract_login_credentials(
+            "login GitHub username alice password s3cr3t"
+        )
+
+        assert credentials == ("alice", "s3cr3t")
+
+    def test_extract_login_credentials_chinese(self):
+        credentials = AgentLoop._extract_login_credentials(
+            "使用用户名alice 和密码s3cr3t 登录 GitHub"
+        )
+
+        assert credentials == ("alice", "s3cr3t")
+
+    def test_build_github_login_script_passes_two_arguments(self):
+        agent = AgentLoop(max_steps=3)
+        source = "def run(username, password):\n    log(username)"
+
+        script = agent._build_skill_script(
+            source,
+            "login GitHub username alice password s3cr3t",
+            "domain/github_login",
+        )
+
+        assert 'run("alice", "s3cr3t")' in script
+
+
 # ---------------------------------------------------------------------------
 # Full loop
 # ---------------------------------------------------------------------------

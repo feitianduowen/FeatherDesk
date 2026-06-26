@@ -1,0 +1,27 @@
+name: github
+base_url: https://github.com/login
+locators:
+  username:
+    css:
+    - '#login_field'
+    - input[name='login']
+    - input[autocomplete='username']
+  password:
+    css:
+    - '#password'
+    - input[name='password']
+    - input[type='password']
+  submit:
+    css:
+    - input[name='commit']
+    - button[type='submit']
+    - .btn-primary
+  search_input:
+    css:
+    - input[name='q']
+    - '#search-input'
+    - input[placeholder*='Search']
+  search_button:
+    css:
+    - button[type='submit']
+    - .header-search-button
