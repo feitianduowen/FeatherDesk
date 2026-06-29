@@ -182,7 +182,6 @@ skills:
     description: "在豆包搜索"
     version: "1.0.0"
 
-
   # 通用交互模板
   - id: "interaction/login_flow"
     name: "通用登录"
