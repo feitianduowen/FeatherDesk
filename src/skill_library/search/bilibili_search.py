@@ -1,11 +1,15 @@
-"""Bilibili search adapter."""
+""""bilibili 搜索适配器"""
 
 
 def run(keyword: str):
-    """Search Bilibili for a keyword.
+    """在bilibili搜索关键词。
 
     Args:
-        keyword: Search keyword.
+        keyword: 搜索关键词。
+
+    流程:
+        1. 构造b站搜索结果页 URL
+        2. 直接导航到结果页
     """
     query = url_quote(keyword)
     goto(f"https://search.bilibili.com/all?keyword={query}")
