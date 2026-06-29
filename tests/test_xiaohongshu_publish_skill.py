@@ -141,14 +141,15 @@ def test_xiaohongshu_publish_requests_code_and_waits_for_about_us():
     assert "click_text_to_image" in steps
     assert "fill_publish_content" in steps
     assert steps.index("click_text_to_image") < steps.index("fill_publish_content")
+    assert "wait_after_fill_publish_content" in steps
     assert "click_generate_image" in steps
-    assert "wait_after_generate_image" in steps
     assert "detect_preview_image" in steps
     assert "click_next_step" in steps
     assert "detect_image_edit" in steps
     assert "click_final_publish" in steps
-    assert steps.index("wait_after_generate_image") > steps.index("click_generate_image")
-    assert steps.index("detect_preview_image") > steps.index("wait_after_generate_image")
+    assert steps.index("wait_after_fill_publish_content") > steps.index("fill_publish_content")
+    assert steps.index("click_generate_image") > steps.index("wait_after_fill_publish_content")
+    assert steps.index("detect_preview_image") > steps.index("click_generate_image")
     assert steps.index("click_next_step") > steps.index("detect_preview_image")
     assert steps.index("detect_image_edit") > steps.index("click_next_step")
     assert steps.index("click_final_publish") > steps.index("detect_image_edit")
@@ -156,7 +157,7 @@ def test_xiaohongshu_publish_requests_code_and_waits_for_about_us():
     assert "accept_agreement" in steps
     assert "click_get_code" in steps
     assert any(step.startswith("wait_about_us_attempt_") for step in steps)
-    assert 5 in waits
+    assert 10 in waits
     assert logs[0] == "Please enter the Xiaohongshu SMS verification code in the browser."
     assert logs[-1] == "Xiaohongshu publish button clicked"
 

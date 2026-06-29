@@ -1040,6 +1040,9 @@ def run(
                 "error": "Failed to fill Xiaohongshu publish content",
                 "steps": steps,
             }
+        steps.append(
+            {"step": "wait_after_fill_publish_content", "result": _safe_call(wait_fn, "", 10)}
+        )
 
         generate_result = _retry(
             "click_generate_image",
@@ -1055,7 +1058,6 @@ def run(
                 "error": "Failed to click Xiaohongshu generate-image button",
                 "steps": steps,
             }
-        steps.append({"step": "wait_after_generate_image", "result": _safe_call(wait_fn, "", 5)})
 
         preview_result = _retry(
             "detect_preview_image",
