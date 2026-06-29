@@ -248,6 +248,26 @@ class TestGitHubLoginScript:
 
         assert 'run("13574133406")' in script
 
+    def test_extract_bilibili_publish_fields(self):
+        title, body = AgentLoop._extract_bilibili_publish_fields(
+            "B站投稿，标题是测试标题，正文是第一段内容\n第二段内容"
+        )
+
+        assert title == "测试标题"
+        assert body == "第一段内容\n第二段内容"
+
+    def test_build_bilibili_publish_script_passes_phone_title_and_body(self):
+        agent = AgentLoop(max_steps=3)
+        source = "def run(phone_number, title, body):\n    log(title)"
+
+        script = agent._build_skill_script(
+            source,
+            "B站投稿，电话号码是13574133406，标题是测试标题，正文是测试正文",
+            "domain/bilibili_publish",
+        )
+
+        assert 'run("13574133406", "测试标题", "测试正文")' in script
+
     def test_select_bilibili_login_beats_bilibili_search_and_generic_login(self):
         from src.skill_library.skill_base import SkillMeta
 
@@ -282,6 +302,41 @@ class TestGitHubLoginScript:
         )
 
         assert selected.id == "domain/bilibili_login"
+
+    def test_select_bilibili_publish_beats_login_and_search(self):
+        from src.skill_library.skill_base import SkillMeta
+
+        agent = AgentLoop(max_steps=3)
+        skills = [
+            SkillMeta(
+                id="domain/bilibili_search",
+                name="Bilibili 搜索",
+                type="domain",
+                triggers=["bilibili", "B站", "搜索"],
+                url_patterns=["bilibili.com", "search.bilibili.com"],
+            ),
+            SkillMeta(
+                id="domain/bilibili_login",
+                name="Bilibili 短信登录",
+                type="domain",
+                triggers=["bilibili", "B站", "登录", "验证码"],
+                url_patterns=["bilibili.com", "*.bilibili.com"],
+            ),
+            SkillMeta(
+                id="domain/bilibili_publish",
+                name="Bilibili 文章投稿",
+                type="domain",
+                triggers=["bilibili", "B站", "投稿", "发布", "文章", "标题", "正文"],
+                url_patterns=["bilibili.com", "*.bilibili.com", "member.bilibili.com"],
+            ),
+        ]
+
+        selected = agent._select_best_skill(
+            skills,
+            "B站投稿，标题是测试标题，正文是测试正文",
+        )
+
+        assert selected.id == "domain/bilibili_publish"
 
 # ---------------------------------------------------------------------------
 # Full loop
