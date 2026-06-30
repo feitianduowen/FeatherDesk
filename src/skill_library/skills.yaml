@@ -214,6 +214,14 @@ skills:
     description: "在csnd搜索"
     version: "1.0.0"
 
+  - id: "domain/zhihu_send"
+    name: "知乎发布"
+    type: "domain"
+    triggers: ["知乎发布", "知乎 发布", "发布", "写文章", "发文章", "投稿"]
+    url_patterns: ["zhihu.com", "zhuanlan.zhihu.com"]
+    description: "在知乎发布文章"
+    version: "1.0.0"
+
   # 通用交互模板
   - id: "interaction/login_flow"
     name: "通用登录"
@@ -364,4 +372,8 @@ sources:
 
   - id: "domain/xiaohongshu_search"
     file: "search/xiaohongshu_search.py"
+    entry: "run"
+
+  - id: "domain/zhihu_send"
+    file: "send/zhihu_send.py"
     entry: "run"
