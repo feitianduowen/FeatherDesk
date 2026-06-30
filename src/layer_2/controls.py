@@ -572,6 +572,33 @@ def mouse_click(x: float, y: float) -> dict:
         return {"success": False, "error": f"{type(exc).__name__}: {exc}"}
 
 
+def upload_file(selector: str, file_path: str) -> dict:
+    """Set a local file path on a file input in the current page."""
+    page = get_browser_manager().get_page()
+    try:
+        path = Path(file_path).expanduser()
+        if not path.is_absolute():
+            path = (_PROJECT_ROOT / path).resolve()
+        else:
+            path = path.resolve()
+        if not path.exists():
+            return {
+                "success": False,
+                "error": f"File not found: {path}",
+                "selector": selector,
+                "file_path": str(path),
+            }
+        page.set_input_files(selector, str(path))
+        return {"success": True, "selector": selector, "file_path": str(path)}
+    except Exception as exc:
+        return {
+            "success": False,
+            "error": f"{type(exc).__name__}: {exc}",
+            "selector": selector,
+            "file_path": file_path,
+        }
+
+
 def get_page_url() -> str:
     """获取当前页面 URL。"""
     return get_browser_manager().get_page().url
@@ -692,6 +719,7 @@ def get_controls_exports() -> Dict[str, Any]:
         # JavaScript
         "run_js": run_js,
         "mouse_click": mouse_click,
+        "upload_file": upload_file,
         # Cookie 持久化
         "save_cookies": save_cookies,
         "load_cookies": load_cookies,

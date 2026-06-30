@@ -260,7 +260,8 @@ class TestGitHubLoginScript:
             "domain/xiaohongshu_publish",
         )
 
-        assert 'run("今天的穿搭灵感", phone_number="13574133406")' in script
+        assert 'mode="text_to_image"' in script
+        assert 'phone_number="13574133406"' in script
 
     def test_build_xiaohongshu_publish_script_allows_missing_phone(self):
         agent = AgentLoop(max_steps=3)
@@ -272,7 +273,49 @@ class TestGitHubLoginScript:
             "domain/xiaohongshu_publish",
         )
 
-        assert 'run("今天的穿搭灵感")' in script
+        assert 'mode="text_to_image"' in script
+        assert "phone_number=" not in script.split("# 自动调用", 1)[-1]
+
+    def test_build_xiaohongshu_publish_script_uploads_image_path(self):
+        agent = AgentLoop(max_steps=3)
+        source = "def run(content=None, **kwargs):\n    log(content)"
+
+        script = agent._build_skill_script(
+            source,
+            r'小红书发布内容 "wecqc", 图片地址是 "D:\xxx\cover.jpg"',
+            "domain/xiaohongshu_publish",
+        )
+
+        assert 'run("wecqc", mode="image_upload", image_path="D:\\\\xxx\\\\cover.jpg")' in script
+
+    def test_build_xiaohongshu_publish_script_uploads_video_path(self):
+        agent = AgentLoop(max_steps=3)
+        source = "def run(content=None, **kwargs):\n    log(content)"
+
+        script = agent._build_skill_script(
+            source,
+            r'小红书上传视频，视频地址是 "D:\xxx\clip.mp4"，标题是“视频标题”，正文是“视频正文”',
+            "domain/xiaohongshu_publish",
+        )
+
+        assert 'mode="video"' in script
+        assert 'video_path="D:\\\\xxx\\\\clip.mp4"' in script
+        assert 'title="视频标题"' in script
+        assert 'run("视频正文"' in script
+
+    def test_build_xiaohongshu_publish_script_writes_article(self):
+        agent = AgentLoop(max_steps=3)
+        source = "def run(content=None, **kwargs):\n    log(content)"
+
+        script = agent._build_skill_script(
+            source,
+            "小红书写长文，标题是“长文标题”，正文是“第一段内容”",
+            "domain/xiaohongshu_publish",
+        )
+
+        assert 'mode="article"' in script
+        assert 'title="长文标题"' in script
+        assert 'run("第一段内容"' in script
 
     def test_build_douyin_login_script_passes_phone_number(self):
         agent = AgentLoop(max_steps=3)

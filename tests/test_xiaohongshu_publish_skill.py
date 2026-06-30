@@ -10,13 +10,19 @@ from playwright.sync_api import sync_playwright
 
 from src.core.script_engine import ScriptEngine
 from src.skill_library.send.xiaohongshu_publish import (
+    DEFAULT_ARTICLE_TITLE,
     _click_final_publish,
     _click_generate_image,
+    _click_new_creation,
     _click_next_step,
     _click_text_to_image,
+    _click_upload_button,
+    _click_article_format,
     _detect_image_edit,
     _detect_preview_image,
+    _fill_article_content,
     _fill_publish_content,
+    _fill_title,
     run,
 )
 
@@ -66,6 +72,20 @@ def _mock_publish_run_js(logged_in=True):
                 "success": True,
                 "text": "文字配图",
                 "method": "click_text_to_image",
+            }
+        if "UPLOAD_BUTTON_TEXT" in code:
+            return {"success": True, "text": "upload", "method": "upload_button"}
+        if "title_value" in code:
+            return {"success": True, "title_value": "测试标题"}
+        if "NEW_CREATION_TEXT" in code:
+            return {"success": True, "text": "新的创作", "method": "new_creation_button"}
+        if "ARTICLE_FORMAT_TEXT" in code:
+            return {"success": True, "text": "一键排版", "method": "article_format_button"}
+        if "ARTICLE_CONTENT_EDITOR" in code:
+            return {
+                "success": True,
+                "content_value": "article body",
+                "method": "article_prosemirror_editor",
             }
         if "content_value" in code:
             return {"success": True, "content_value": "测试图文内容"}
@@ -167,7 +187,7 @@ def test_xiaohongshu_publish_requests_code_and_waits_for_about_us():
     assert logs[-1] == "Xiaohongshu publish button clicked"
 
 
-def test_xiaohongshu_publish_requires_phone_when_not_logged_in():
+def test_xiaohongshu_publish_without_phone_waits_for_existing_login():
     result = run(
         "测试图文内容",
         max_wait_seconds=0,
@@ -179,8 +199,139 @@ def test_xiaohongshu_publish_requires_phone_when_not_logged_in():
         log_fn=lambda message: None,
     )
 
-    assert result["success"] is False
-    assert result["requires_phone_number"] is True
+    assert result["success"] is True
+    steps = [step["step"] for step in result["steps"]]
+    assert "fill_phone" not in steps
+    assert "click_get_code" not in steps
+    assert "login_me_button_confirmation" in steps
+
+
+def test_xiaohongshu_publish_uploads_local_image_when_path_is_provided():
+    urls = []
+    uploads = []
+
+    result = run(
+        "图片正文",
+        mode="image_upload",
+        image_path=r"D:\notes\cover.jpg",
+        title="图片标题",
+        max_wait_seconds=0,
+        goto_fn=lambda url: urls.append(url) or "ok",
+        run_js_fn=_mock_publish_run_js(logged_in=True),
+        wait_fn=_noop,
+        upload_file_fn=lambda selector, path: uploads.append((selector, path))
+        or {"success": True, "selector": selector, "file_path": path},
+        get_url_fn=lambda: "https://creator.xiaohongshu.com/publish/publish",
+        get_text_fn=lambda: "",
+        log_fn=lambda message: None,
+    )
+
+    assert result["success"] is True
+    assert result["mode"] == "image_upload"
+    assert urls[-1].endswith("target=image")
+    assert uploads == [('input[type="file"][accept*="image"]', r"D:\notes\cover.jpg")]
+    steps = [step["step"] for step in result["steps"]]
+    assert "click_upload_image" in steps
+    assert "upload_image_file" in steps
+    assert "fill_title" in steps
+    assert "fill_publish_content" in steps
+    assert "click_text_to_image" not in steps
+    assert "click_generate_image" not in steps
+    assert "click_final_publish" in steps
+
+
+def test_xiaohongshu_publish_uploads_local_video():
+    urls = []
+    uploads = []
+    waits = []
+
+    result = run(
+        "视频正文",
+        mode="video",
+        video_path=r"D:\notes\clip.mp4",
+        title="视频标题",
+        max_wait_seconds=0,
+        goto_fn=lambda url: urls.append(url) or "ok",
+        run_js_fn=_mock_publish_run_js(logged_in=True),
+        wait_fn=lambda seconds: waits.append(seconds) or "ok",
+        upload_file_fn=lambda selector, path: uploads.append((selector, path))
+        or {"success": True, "selector": selector, "file_path": path},
+        get_url_fn=lambda: "https://creator.xiaohongshu.com/publish/publish",
+        get_text_fn=lambda: "",
+        log_fn=lambda message: None,
+    )
+
+    assert result["success"] is True
+    assert result["mode"] == "video"
+    assert urls[-1].endswith("target=video")
+    assert uploads == [('input[type="file"][accept*="video"]', r"D:\notes\clip.mp4")]
+    steps = [step["step"] for step in result["steps"]]
+    assert "click_upload_video" in steps
+    assert "upload_video_file" in steps
+    assert "wait_before_video_publish" in steps
+    assert "click_final_publish" in steps
+    assert 10 in waits
+    assert steps.index("wait_before_video_publish") < steps.index("click_final_publish")
+
+
+def test_xiaohongshu_publish_fills_article_prosemirror_editor():
+    html = """
+    <body>
+      <textarea id="other" placeholder="输入标题"></textarea>
+      <div class="rich-editor-content">
+        <div>
+          <div contenteditable="true" spellcheck="false" autocorrect="off"
+            autocapitalize="off" autocomplete="off" translate="no"
+            class="tiptap ProseMirror" tabindex="0">
+            <p><br></p>
+          </div>
+        </div>
+      </div>
+    </body>
+    """
+
+    def assert_page(page):
+        text = "\u6b63\u6587\u5185\u5bb9evfwfvw"
+        result = _fill_article_content(lambda code: page.evaluate(code), text)
+
+        assert result["success"] is True
+        assert result["method"] == "article_prosemirror_editor"
+        assert page.locator(".tiptap.ProseMirror > p").text_content() == text
+        assert page.locator("#other").input_value() == ""
+
+    _with_page(html, assert_page)
+
+
+def test_xiaohongshu_publish_article_uses_default_title_and_formats():
+    urls = []
+    waits = []
+
+    result = run(
+        "长文正文",
+        mode="article",
+        max_wait_seconds=0,
+        goto_fn=lambda url: urls.append(url) or "ok",
+        run_js_fn=_mock_publish_run_js(logged_in=True),
+        wait_fn=lambda seconds: waits.append(seconds) or "ok",
+        get_url_fn=lambda: "https://creator.xiaohongshu.com/publish/publish",
+        get_text_fn=lambda: "",
+        log_fn=lambda message: None,
+    )
+
+    assert result["success"] is True
+    assert result["mode"] == "article"
+    assert result["title"] == DEFAULT_ARTICLE_TITLE
+    assert urls[-1].endswith("target=article")
+    steps = [step["step"] for step in result["steps"]]
+    assert "click_new_creation" in steps
+    assert "fill_article_title" in steps
+    assert "fill_article_content" in steps
+    assert "click_article_format" in steps
+    assert "click_article_next_step" in steps
+    assert "wait_before_article_publish" in steps
+    assert "click_final_publish" in steps
+    assert 10 in waits
+    assert steps.index("wait_before_article_publish") < steps.index("click_final_publish")
 
 
 def test_xiaohongshu_publish_clicks_text_to_image_generates_and_publishes():
