@@ -157,7 +157,7 @@ class TestInitializeRootLogger:
             assert isinstance(root.handlers[0].formatter, JSONFormatter)
 
     def test_no_color_env_disables_colors(self):
-        with patch.dict(os.environ, {"NO_COLOR": "1"}):
+        with patch.dict(os.environ, {"NO_COLOR": "1", "LOG_FORMAT": "text"}):
             import src.logging
 
             src.logging._initialized = False

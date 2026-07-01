@@ -14,6 +14,7 @@ from src.layer_2.controls import (
     go_back,
     go_forward,
     goto,
+    mouse_click,
     reload_page,
     screenshot,
     smart_click,
@@ -21,6 +22,7 @@ from src.layer_2.controls import (
     smart_fill_form,
     smart_login,
     smart_search,
+    upload_file,
     wait,
     wait_for_element,
     wait_for_navigation,
@@ -107,6 +109,28 @@ class TestNavigation:
     def test_reload(self, mock_bm):
         result = reload_page()
         assert "刷新" in result
+
+    def test_mouse_click(self, mock_bm):
+        _bm, page = mock_bm
+        result = mouse_click(12, 34)
+        assert result["success"] is True
+        assert result["x"] == 12
+        assert result["y"] == 34
+        page.mouse.click.assert_called_once_with(12.0, 34.0)
+
+    def test_upload_file(self, mock_bm, tmp_path):
+        _bm, page = mock_bm
+        image = tmp_path / "note.jpg"
+        image.write_bytes(b"fake image")
+
+        result = upload_file("input[type='file']", str(image))
+
+        assert result["success"] is True
+        assert result["selector"] == "input[type='file']"
+        page.set_input_files.assert_called_once_with(
+            "input[type='file']",
+            str(image.resolve()),
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -321,4 +345,6 @@ class TestExports:
         assert "get_title" in exports
         assert "get_text" in exports
         assert "screenshot" in exports
+        assert "mouse_click" in exports
+        assert "upload_file" in exports
         assert len(exports) >= 15

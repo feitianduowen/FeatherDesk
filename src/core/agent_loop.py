@@ -45,6 +45,7 @@ from src.core.intent_parser import LLMIntentParser, get_llm_intent_parser
 from src.core.script_engine import get_script_engine
 from src.core.script_generator import ScriptGenerator
 from src.core.skill_router import SkillDecision, SkillRouter, get_skill_router
+from src.core.vision import get_vision_module
 # from src.core.vision import VisionModule, get_vision_module  # 暂时禁用
 from src.layer_2.controls import get_controls_exports
 from src.logging import bind_context, get_logger, log_timing
@@ -687,6 +688,42 @@ class AgentLoop:
 
         if skill_id == "domain/xiaohongshu_publish":
             phone_number = self._extract_phone_number(task)
+            image_path = self._extract_xiaohongshu_media_path(task, "image")
+            video_path = self._extract_xiaohongshu_media_path(task, "video")
+            mode = self._extract_xiaohongshu_publish_mode(task, image_path, video_path)
+            title, content = self._extract_xiaohongshu_publish_fields(task)
+            missing = []
+            if mode in {"text_to_image", "article"} and not content:
+                missing.append("content")
+            if mode == "video" and not video_path:
+                missing.append("video_path")
+            if mode == "image_upload" and not image_path:
+                missing.append("image_path")
+            if missing:
+                return (
+                    f"{source_code}\n\n"
+                    f"raise ValueError('Xiaohongshu publish requires {', '.join(missing)}')"
+                )
+            args = [json.dumps(content, ensure_ascii=False) if content is not None else "None"]
+            kwargs = [f"mode={json.dumps(mode, ensure_ascii=False)}"]
+            if phone_number:
+                kwargs.append(f"phone_number={json.dumps(phone_number, ensure_ascii=False)}")
+            if image_path:
+                kwargs.append(f"image_path={json.dumps(image_path, ensure_ascii=False)}")
+            if video_path:
+                kwargs.append(f"video_path={json.dumps(video_path, ensure_ascii=False)}")
+            if title:
+                kwargs.append(f"title={json.dumps(title, ensure_ascii=False)}")
+            call_args = ", ".join(args + kwargs)
+            return (
+                f"{source_code}\n\n# 自动调用\n"
+                f"_result = run({call_args})\n"
+                "if isinstance(_result, dict) and not _result.get('success', True):\n"
+                "    raise RuntimeError(_result.get('error') or str(_result))"
+            )
+
+        if skill_id == "domain/xiaohongshu_publish":
+            phone_number = self._extract_phone_number(task)
             content = self._extract_xiaohongshu_publish_content(task)
             if not content:
                 return (
@@ -885,6 +922,97 @@ class AgentLoop:
                     return content
 
         return None
+
+    @staticmethod
+    def _extract_xiaohongshu_media_path(task: str, kind: str) -> str | None:
+        """Extract a local image or video path from a Xiaohongshu publish task."""
+        import re
+
+        if kind == "video":
+            extensions = r"mp4|mov|avi|mkv|webm|m4v"
+            labels = r"视频地址|视频路径|视频|video_path|video|地址|path"
+        else:
+            extensions = r"jpg|jpeg|png|webp|bmp|gif"
+            labels = r"图片地址|图片路径|图片|图像|image_path|image|地址|path"
+
+        quoted_pattern = rf"['\"“”‘’]([^'\"“”‘’]+?\.(?:{extensions}))['\"“”‘’]"
+        for match in re.finditer(quoted_pattern, task, re.IGNORECASE):
+            value = match.group(1).strip()
+            prefix = task[max(0, match.start() - 24) : match.start()]
+            if re.search(labels, prefix, re.IGNORECASE) or re.search(
+                rf"\.(?:{extensions})$",
+                value,
+                re.IGNORECASE,
+            ):
+                return value
+
+        label_pattern = (
+            rf"(?:{labels})\s*(?:是|为|:|：|=)?\s*"
+            rf"['\"“”‘’]?([A-Za-z]:[\\/][^'\"“”‘’\s，,。；;]+?\.(?:{extensions}))"
+        )
+        match = re.search(label_pattern, task, re.IGNORECASE)
+        if match:
+            return match.group(1).strip()
+
+        bare_pattern = rf"([A-Za-z]:[\\/][^'\"“”‘’\s，,。；;]+?\.(?:{extensions}))"
+        match = re.search(bare_pattern, task, re.IGNORECASE)
+        if match:
+            return match.group(1).strip()
+        return None
+
+    @staticmethod
+    def _extract_xiaohongshu_publish_mode(
+        task: str,
+        image_path: str | None = None,
+        video_path: str | None = None,
+    ) -> str:
+        """Return text_to_image, image_upload, video, or article."""
+        import re
+
+        if re.search(r"(文章|长文|小说|article|novel)", task, re.IGNORECASE) and re.search(
+            r"(小红书|xiaohongshu|xhs|rednote|上传|写|发布|发表|post|publish|write)",
+            task,
+            re.IGNORECASE,
+        ):
+            return "article"
+        if video_path or re.search(r"(上传视频|视频地址|视频路径|video)", task, re.IGNORECASE):
+            return "video"
+        if image_path:
+            return "image_upload"
+        return "text_to_image"
+
+    @staticmethod
+    def _extract_xiaohongshu_publish_fields(task: str) -> tuple[str | None, str | None]:
+        """Extract optional title and body/content for Xiaohongshu publishing."""
+        import re
+
+        def clean(value: str | None) -> str | None:
+            if not value:
+                return None
+            text = value.strip().strip("'\"`“”‘’")
+            text = re.split(
+                r"\s*(?:图片地址|图片路径|视频地址|视频路径|地址|电话|电话号码|手机号|手机号码|phone|image_path|video_path)\s*(?:是|为|:|：|=)?",
+                text,
+                maxsplit=1,
+            )[0]
+            text = text.rstrip("，,。.;；!！\n\r\t ")
+            text = text.strip("'\"`“”‘’")
+            return text or None
+
+        title = None
+        title_patterns = [
+            r"(?:标题|题目|title)\s*(?:是|为|:|：|=)?\s*['\"“‘](.+?)['\"”’]",
+            r"(?:标题|题目|title)\s*(?:是|为|:|：|=)?\s*(.+?)(?=(?:正文|内容|文案|图片地址|图片路径|视频地址|视频路径|地址|电话|手机号|$))",
+        ]
+        for pattern in title_patterns:
+            match = re.search(pattern, task, re.IGNORECASE | re.DOTALL)
+            if match:
+                title = clean(match.group(1))
+                if title:
+                    break
+
+        body = AgentLoop._extract_xiaohongshu_publish_content(task)
+        return title, body
 
     @staticmethod
     def _extract_comment_text(task: str) -> str | None:

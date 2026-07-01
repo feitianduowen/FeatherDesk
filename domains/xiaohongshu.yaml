@@ -82,6 +82,53 @@ locators:
     xpath:
       - "//*[self::button or @role='button' or @role='tab' or self::div or self::span][contains(normalize-space(.), '文字配图')]"
 
+  upload_image:
+    css:
+      - "button.upload-button:has-text('上传图片')"
+      - "button.bg-red:has-text('上传图片')"
+      - "button:has-text('上传图片')"
+      - "[role='button']:has-text('上传图片')"
+      - "span:has-text('上传图片')"
+    xpath:
+      - "//*[self::button or @role='button' or self::div or self::span][contains(normalize-space(.), '上传图片')]"
+
+  upload_video:
+    css:
+      - "button.upload-button:has-text('上传视频')"
+      - "button.bg-red:has-text('上传视频')"
+      - "button:has-text('上传视频')"
+      - "[role='button']:has-text('上传视频')"
+      - "span:has-text('上传视频')"
+    xpath:
+      - "//*[self::button or @role='button' or self::div or self::span][contains(normalize-space(.), '上传视频')]"
+
+  new_creation:
+    css:
+      - "span.center:has-text('新的创作')"
+      - "button:has-text('新的创作')"
+      - "[role='button']:has-text('新的创作')"
+      - "span:has-text('新的创作')"
+    xpath:
+      - "//*[self::button or @role='button' or self::div or self::span][contains(normalize-space(.), '新的创作')]"
+
+  title_input:
+    css:
+      - "textarea[placeholder='输入标题']"
+      - "textarea[placeholder*='标题']"
+      - "input[placeholder*='标题']"
+      - "[contenteditable='true'][data-placeholder*='标题']"
+    xpath:
+      - "//*[self::textarea or self::input or @contenteditable='true'][contains(@placeholder, '标题') or contains(@data-placeholder, '标题')]"
+
+  article_format:
+    css:
+      - ".next-btn-text:has-text('一键排版')"
+      - "button:has-text('一键排版')"
+      - "[role='button']:has-text('一键排版')"
+      - "span:has-text('一键排版')"
+    xpath:
+      - "//*[self::button or @role='button' or self::div or self::span][contains(normalize-space(.), '一键排版')]"
+
   publish_content:
     css:
       - "p.editor-paragraph"
