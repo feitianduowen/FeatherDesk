@@ -504,37 +504,6 @@ class AgentLoop:
                 decision.skill.name,
             )
 
-        # 1b. 回退：旧的 registry.search + _build_skill_script 路径
-        with log_timing("agent_plan_skill_lookup") as meta:
-            skills = self._registry.search(query=task)
-            meta["matches"] = len(skills)
-
-        if skills:
-            skill = self._select_best_skill(skills, task)
-            detail = self._registry.get_detail(skill.id)
-
-            if detail and detail.source_code:
-                script = self._build_skill_script(detail.source_code, task, skill.id)
-                if script:
-                    step.action = f"使用技能: {skill.name}"
-                    step.script = script
-                    step.result = f"找到技能: {skill.name} (registry 回退)"
-                    logger.info("PLAN: registry fallback matched '%s'", skill.name)
-                    self._bus.emit(
-                        Event(
-                            name=EVENT_AGENT_PLAN,
-                            phase=Phase.AFTER,
-                            data={
-                                "step_number": step.step_number,
-                                "source": "skill_registry_fallback",
-                                "skill_id": skill.id,
-                                "skill_name": skill.name,
-                            },
-                            result=step.result,
-                        )
-                    )
-                    return AgentState.ACT
-
         # 2. 查找已保存的脚本（经验复用）
         saved_script = self._experience.find_script(task)
         if saved_script and saved_script.script:
@@ -572,28 +541,6 @@ class AgentLoop:
                 )
             )
             return AgentState.ACT
-
-        # 4. 规则失败 → LLM 兜底
-        if self._llm_parser and self._llm_parser.available:
-            logger.info("PLAN: 规则未命中，尝试 LLM 意图解析")
-            script = self._generate_script_via_llm(task)
-            if script:
-                step.action = "LLM 意图解析"
-                step.script = script
-                step.result = "LLM 兜底生成脚本"
-                logger.info("PLAN: LLM fallback succeeded")
-                self._bus.emit(
-                    Event(
-                        name=EVENT_AGENT_PLAN,
-                        phase=Phase.AFTER,
-                        data={
-                            "step_number": step.step_number,
-                            "source": "llm_fallback",
-                        },
-                        result=step.result,
-                    )
-                )
-                return AgentState.ACT
 
         # 5. 无法生成脚本
         step.result = "无法规划行动"
