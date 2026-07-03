@@ -1,8 +1,10 @@
 """知乎提问题适配器。"""
 
+SIGN_URL="https://www.zhihu.com/signin"
+
 def run(keyword: str = "-1"):
     """打开知乎首页，填写问题并发布。"""
-    if not ensure_auth("zhihu", "https://www.zhihu.com/"):
+    if not ensure_auth("zhihu", SIGN_URL):
         log("Zhihu login state not confirmed; skip question")
         return
 
