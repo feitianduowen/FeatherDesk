@@ -255,6 +255,7 @@ class AgentLoop:
         self._current_explore_snapshot = None
         self._last_panel_answer: str | None = None
         self._explore_entry_bootstrap_attempted: set[str] = set()
+        self._just_navigated_to_entry: bool = False
 
     def run(self, task: str) -> AgentTaskResult:
         """执行一个自然语言任务。
@@ -457,6 +458,7 @@ class AgentLoop:
         self._last_explore_snapshot = None
         self._current_explore_snapshot = None
         self._explore_entry_bootstrap_attempted = set()
+        self._just_navigated_to_entry = False
 
         # 绑定任务级上下文，所有后续日志自动携带 task_id / task
         with bind_context(task_id=task_id, task=task):
@@ -721,6 +723,7 @@ class AgentLoop:
             return None
 
         logger.info("Explore bootstrap navigated to %s", target_url)
+        self._just_navigated_to_entry = True
         return target_url
 
     @staticmethod
@@ -1176,6 +1179,16 @@ class AgentLoop:
             step.result = "plan cancelled by hook"
             logger.info("PLAN: cancelled by hook")
             return AgentState.FAILED
+
+        # ── 0. If we just navigated to target site via entry resolution,
+        #     skip skill matching and go directly to Explore mode ──
+        if self._just_navigated_to_entry:
+            self._just_navigated_to_entry = False
+            step.action = "跳转到目标站点，进入 Explore 模式"
+            step.mode = "explore"
+            step.result = "刚完成入口跳转，跳过技能匹配，直接 Explore"
+            logger.info("PLAN: just navigated to entry, skipping to Explore")
+            return AgentState.EXPLORE
 
         # ── 1. SkillRouter 严格关键词匹配 ──
         with log_timing("agent_plan_skill_router") as meta:
