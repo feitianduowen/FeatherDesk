@@ -973,6 +973,15 @@ class AgentLoop:
             )
         except Exception as exc:
             logger.warning("LLM search result selection failed: %s", exc)
+            # Rule-based fallback: pick first non-search-engine result
+            for r in results[:6]:
+                url = r.get("url", "")
+                if url and not any(
+                    engine in url.lower()
+                    for engine in ("bing.com", "google.com", "baidu.com", "sogou.com")
+                ):
+                    logger.info("Search fallback (rule-based): %s", url)
+                    return self._normalize_entry_url(url)
             return None
 
         try:
@@ -980,7 +989,15 @@ class AgentLoop:
         except (TypeError, ValueError):
             confidence = 0
         if confidence < 0.5:
-            logger.info("LLM search selection confidence too low: %.2f", confidence)
+            # LLM not confident — try first non-search-engine result
+            for r in results[:6]:
+                url = r.get("url", "")
+                if url and not any(
+                    engine in url.lower()
+                    for engine in ("bing.com", "google.com", "baidu.com", "sogou.com")
+                ):
+                    logger.info("Search fallback (low confidence): %s", url)
+                    return self._normalize_entry_url(url)
             return None
 
         best_idx = int(data.get("best_index", 1)) - 1
@@ -1337,10 +1354,16 @@ class AgentLoop:
             page_url = get_browser_manager().get_page().url
         except Exception:
             page_url = ""
-        if not self._is_blank_page(page_url):
-            return False
-        lowered_script = script.lower()
-        return any(engine in lowered_script for engine in _GENERIC_SEARCH_ENGINES)
+        # Skip if on blank page with search engine script
+        if self._is_blank_page(page_url):
+            lowered_script = script.lower()
+            return any(engine in lowered_script for engine in _GENERIC_SEARCH_ENGINES)
+        # Skip if on a search results page (failed entry resolution)
+        # and the script would navigate to another search engine
+        if any(engine in page_url.lower() for engine in ("bing.com/search", "google.com/search", "baidu.com/s")):
+            lowered_script = script.lower()
+            return any(engine in lowered_script for engine in _GENERIC_SEARCH_ENGINES)
+        return False
 
     def _find_explore_experience(
         self,
