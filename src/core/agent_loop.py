@@ -1651,18 +1651,6 @@ class AgentLoop:
             f"当前快照版本: {snapshot.version}\n"
             f"ARIA 快照:\n{json.dumps(snapshot.model_dump(mode='json'), ensure_ascii=False)}\n\n"
             "规则:\n"
-            "1. 优先使用快照中的 ref 操作元素。\n"
-<<<<<<< HEAD
-            "2. click/fill/select/check/uncheck/hover 必须填写 ref。\n"
-            "3. fill/select 必须填写 value。\n"
-            "4. 会导致页面跳转的最后一步请加 condition=load 或 networkidle。\n"
-            "5. 每个使用 ref 的动作都填写 snapshot_v 为当前快照版本。\n"
-            "6. 不要编造快照里不存在的 ref。\n"
-            "7. 如果任务是在当前网站搜索商品/内容，优先找到搜索框，fill 搜索关键词，再按 Enter 或点击搜索按钮。\n"
-            "8. 如果任务是在 AI/问答/聊天网站询问问题，优先找到消息输入框，fill 用户问题，再按 Enter 或点击发送按钮。\n"
-            "9. 顶层必须返回 JSON 对象 {\"actions\": [...]}，不要只返回单个 action 对象或裸数组。\n"
-            "10. 如果刚完成登录或页面发生变化，不要继续使用旧页面假设；等待重新快照后再规划。"
-=======
             "2. click/double_click/fill/select/check/uncheck/hover/drag/upload 必须填写 ref。\n"
             "3. fill/select/type/upload 必须填写 value。\n"
             "4. keyboard 的 value 是按键名（Enter, Escape, Tab, Control+a 等）。\n"
@@ -1678,8 +1666,7 @@ class AgentLoop:
             "使用 pause_for_input 暂停询问用户。pause_for_input 的 value 是问题文本，"
             "可用 [选项] 提供快捷选择；如需结构化输入可填写 fields。\n"
             "14. pause_for_input 应作为本批次最后一步。\n"
-            "15. 每个动作尽量填写 intent（意图）和 reasoning（推理）帮助调试。"
->>>>>>> 548c352a2453dbb61df3b570e4868cd2b9a83a48
+            "15. 每个动作尽量填写 intent（意图）和 reasoning（推理）帮助调试。\n"
         )
         if self._last_panel_answer:
             prompt += f"\n\n上一次用户回答: {self._last_panel_answer}"
