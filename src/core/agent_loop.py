@@ -1648,7 +1648,8 @@ class AgentLoop:
             "6. 不要编造快照里不存在的 ref。\n"
             "7. 如果任务是在当前网站搜索商品/内容，优先找到搜索框，fill 搜索关键词，再按 Enter 或点击搜索按钮。\n"
             "8. 如果任务是在 AI/问答/聊天网站询问问题，优先找到消息输入框，fill 用户问题，再按 Enter 或点击发送按钮。\n"
-            "9. 如果刚完成登录或页面发生变化，不要继续使用旧页面假设；等待重新快照后再规划。"
+            "9. 顶层必须返回 JSON 对象 {\"actions\": [...]}，不要只返回单个 action 对象或裸数组。\n"
+            "10. 如果刚完成登录或页面发生变化，不要继续使用旧页面假设；等待重新快照后再规划。"
         )
         if self._last_panel_answer:
             prompt += f"\n\n上一次面板回答: {self._last_panel_answer}"
@@ -1669,6 +1670,7 @@ class AgentLoop:
                 temperature=0,
                 max_tokens=1024,
             )
+            data = self._normalize_explore_action_batch_data(data)
             batch = ActionBatch.model_validate(data)
         except Exception as exc:
             logger.warning("Explore planner failed: %s", exc)
@@ -1678,6 +1680,35 @@ class AgentLoop:
             if action.ref and not action.snapshot_v:
                 action.snapshot_v = snapshot.version
         return batch
+
+    @staticmethod
+    def _normalize_explore_action_batch_data(data: Any) -> Any:
+        """Accept common LLM shape drift while preserving the ActionBatch contract."""
+
+        if isinstance(data, list):
+            return {"actions": data}
+        if not isinstance(data, dict):
+            return data
+
+        if "actions" in data:
+            actions = data.get("actions")
+            if isinstance(actions, dict) and "action" in actions:
+                normalized = dict(data)
+                normalized["actions"] = [actions]
+                return normalized
+            return data
+
+        if "action" in data:
+            return {"actions": [data]}
+
+        for key in ("steps", "operations"):
+            value = data.get(key)
+            if isinstance(value, list):
+                return {"actions": value, "task_id": data.get("task_id")}
+            if isinstance(value, dict) and "action" in value:
+                return {"actions": [value], "task_id": data.get("task_id")}
+
+        return data
 
     @staticmethod
     def _extract_login_credentials(task: str) -> tuple[str | None, str | None]:
