@@ -928,8 +928,7 @@ class PywinautoWechatAutomation:
                 self._click_relative(self.window, *CHAT_INPUT_REL)
         self._paste_or_type(message)
         time.sleep(0.2)
-        if not self._click_send_button_visual(timeout=1.5):
-            self._send_keys("{ENTER}")
+        self._send_keys("{ENTER}")
         time.sleep(0.5)
 
     def _resolve_executable(self) -> Path:

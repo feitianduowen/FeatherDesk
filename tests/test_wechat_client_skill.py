@@ -688,7 +688,9 @@ def test_wechat_send_message_uses_chat_input_not_search_input():
     automation._paste_or_type = lambda text: sent_keys.append(text)
     automation._send_keys = lambda keys: sent_keys.append(keys)
     automation._click_relative = lambda win, _rx, _ry: setattr(win, "clicked", True)
-    automation._click_send_button_visual = lambda timeout=1.5: False
+    automation._click_send_button_visual = lambda timeout=1.5: (_ for _ in ()).throw(
+        AssertionError("send button should not be clicked")
+    )
 
     automation.send_message("你好")
 
@@ -697,9 +699,9 @@ def test_wechat_send_message_uses_chat_input_not_search_input():
     assert sent_keys == ["你好", "{ENTER}"]
 
 
-def test_wechat_send_message_uses_visual_input_and_send_button(monkeypatch):
+def test_wechat_send_message_uses_visual_input_and_enter(monkeypatch):
     monkeypatch.setattr(wechat_module.time, "sleep", lambda _seconds: None)
-    image_locator = FakeImageLocator(matches=[object(), object()])
+    image_locator = FakeImageLocator(matches=[object()])
     window = FakeUiElement("微信", process_name="WeChat.exe", width=1000, height=800, left=0, top=0)
     automation = PywinautoWechatAutomation(image_locator=image_locator)
     automation.window = window
@@ -707,6 +709,9 @@ def test_wechat_send_message_uses_visual_input_and_send_button(monkeypatch):
     automation._paste_or_type = lambda text: sent_keys.append(text)
     automation._send_keys = lambda keys: sent_keys.append(keys)
     automation._find_message_edit = lambda: None
+    automation._click_send_button_visual = lambda timeout=1.5: (_ for _ in ()).throw(
+        AssertionError("send button should not be clicked")
+    )
     automation._click_relative = lambda *_args: (_ for _ in ()).throw(
         AssertionError("relative fallback should not be used")
     )
@@ -715,9 +720,8 @@ def test_wechat_send_message_uses_visual_input_and_send_button(monkeypatch):
 
     assert image_locator.calls == [
         ("wechatSend.png", (0, 0, 1000, 800), 0.72),
-        ("wechatSendGreen.png", (0, 0, 1000, 800), 0.74),
     ]
-    assert sent_keys == ["你好"]
+    assert sent_keys == ["你好", "{ENTER}"]
 
 
 def test_wechat_template_click_normalizes_window_before_screenshot(monkeypatch):
@@ -996,7 +1000,9 @@ def test_wechat_send_message_uses_relative_input_fallback():
     automation._paste_or_type = lambda text: sent_keys.append(text)
     automation._send_keys = lambda keys: sent_keys.append(keys)
     automation._click_message_box_visual = lambda timeout=2.0: False
-    automation._click_send_button_visual = lambda timeout=1.5: False
+    automation._click_send_button_visual = lambda timeout=1.5: (_ for _ in ()).throw(
+        AssertionError("send button should not be clicked")
+    )
 
     automation.send_message("你好")
 
