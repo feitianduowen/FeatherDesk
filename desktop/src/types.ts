@@ -126,6 +126,8 @@ export interface DesktopSettings {
   useCloakBrowser: boolean;
   exploreOcrEnabled: boolean;
   exploreVisionEnabled: boolean;
+  visionEnabled: boolean;
+  logLevel: "DEBUG" | "INFO" | "WARNING" | "ERROR";
 }
 
 export interface ApiConnectionTestResult {

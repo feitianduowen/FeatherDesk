@@ -603,6 +603,8 @@ function registerIpc(): void {
   ipcMain.handle("settings:get", () => {
     const settings = readJson<Record<string, string>>(userFile("settings.json"), {});
     const maxSteps = Math.min(100, Math.max(5, Math.round(Number(settings.maxSteps || "20")) || 20));
+    const validLogLevels = ["DEBUG", "INFO", "WARNING", "ERROR"];
+    const logLevel = validLogLevels.includes(settings.logLevel) ? settings.logLevel : "INFO";
     return {
       provider: settings.provider || "openai",
       baseUrl: settings.baseUrl || "https://api.openai.com/v1",

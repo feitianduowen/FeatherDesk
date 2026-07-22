@@ -491,6 +491,9 @@ class SkillRouter:
         )
         font_color_value = json.dumps(extracted.get("font_color", "-1"), ensure_ascii=False)
         italic_value = json.dumps(extracted.get("italic", "-1"), ensure_ascii=False)
+        insert_image_value = json.dumps(
+            extracted.get("insert_image", "-1"), ensure_ascii=False
+        )
         image_path_value = json.dumps(extracted.get("image_path", "-1"), ensure_ascii=False)
         default_output_dir_value = json.dumps(
             str(Path(__file__).resolve().parents[2] / "out"), ensure_ascii=False
@@ -505,6 +508,13 @@ class SkillRouter:
             "def __agentic_is_ai_mode(answer):\n"
             "    text = str(answer or '').strip().lower()\n"
             "    return text in {'ai', 'ai生成', '生成', '自动生成', 'yes', 'y', '1', 'true', '是'}\n\n"
+            "def __agentic_wps_requests_table(value):\n"
+            "    text = str(value or '')\n"
+            "    markers = ('表格', '数据表', '统计表', '对比表', '对照表', '一览表', '清单')\n"
+            "    for marker in markers:\n"
+            "        if marker in text:\n"
+            "            return True\n"
+            "    return False\n\n"
             "def __agentic_required_input(question, name):\n"
             "    attempts = 0\n"
             "    while True:\n"
@@ -559,7 +569,7 @@ class SkillRouter:
             "        raise RuntimeError(f'AI生成{label}失败：返回为空')\n"
             "    return text\n\n"
             "def __agentic_prepare_wps_body(current, current_title, allow_ai, markdown_path):\n"
-            "    global __agentic_wps_body_format\n"
+            "    global __agentic_wps_body_format, __agentic_wps_table_requested, __agentic_wps_table_requirement\n"
             "    if not __agentic_is_missing_param(markdown_path):\n"
             "        return current\n"
             "    if allow_ai:\n"
@@ -573,15 +583,36 @@ class SkillRouter:
             "        else:\n"
             "            topic = current\n"
             "        count = __agentic_required_input('请输入 WPS 正文字数（例如 800）：', '正文字数')\n"
+            "        table_instruction = ''\n"
+            "        if __agentic_wps_requests_table(topic):\n"
+            "            __agentic_wps_table_requested = True\n"
+            "            table_answer = panel_prompt(\n"
+            "                '检测到文章要求包含表格。请输入表格内容、列名、数据或样式要求；直接回车则由 AI 根据文章自由设计：'\n"
+            "            )\n"
+            "            table_answer = str(table_answer or '').strip()\n"
+            "            __agentic_wps_table_requirement = table_answer or '请根据文章主题和正文自行设计最有帮助的表格'\n"
+            "            table_instruction = (\n"
+            "                '\\n文章需要插入一个表格。请根据内容结构自行决定最合适的位置，'\n"
+            "                '并在该位置单独输出一行 [[WPS_TABLE_1]]。'\n"
+            "                '不要直接输出 Markdown 表格，也不要解释占位符。\\n'\n"
+            "                f'表格要求：{__agentic_wps_table_requirement}\\n'\n"
+            "            )\n"
             "        prompt = (\n"
-            "            f'请根据文档标题“{current_title}”和内容要求“{topic}”生成一篇中文文章正文，字数约{count}字。'\n"
-            "            '要求结构清晰、表达自然，可直接放入 WPS 文档；如有主送机关，正文须从主送机关的下一行开始。'\n"
-            "            '请直接输出 Markdown 正文，不要输出一级标题、说明或 Markdown 代码块。'\n"
-            "            '正文应使用 ## 表示一级标题、### 表示二级标题；关键观点可加粗（**文字**），重点短语可斜体（*文字*），并可使用有序或无序列表。'\n"
-            "            '下划线使用 <u>文字</u>；彩色文字使用 <span style=\"color:#RRGGBB\">文字</span>，这些格式可以与加粗、斜体嵌套。'\n"
+            "            '请严格按照下面的用户原始要求生成 WPS 文章正文，不要擅自添加用户未要求的格式。\\n'\n"
+            "            f'用户原始要求：\\n{topic}\\n\\n'\n"
+            "            f'参考标题：{current_title}\\n目标字数：约{count}字。\\n'\n"
+            "            '仅当用户原始要求明确提出对应格式时，才使用以下兼容标记：'\n"
+            "            '不同颜色使用 <span style=\"color:#RRGGBB\">文字</span>，'\n"
+            "            '下划线使用 <u>文字</u>，加粗使用 **文字**，斜体使用 *文字*；'\n"
+            "            '用户未要求的格式不得添加。\\n'\n"
+            "            f'{table_instruction}'\n"
+            "            '只输出最终正文，不要附加解释或 Markdown 代码块。'\n"
             "        )\n"
             "        try:\n"
-            "            return __agentic_generate_text(prompt, 'WPS正文')\n"
+            "            generated = __agentic_generate_text(prompt, 'WPS正文')\n"
+            "            if __agentic_wps_table_requested and '[[WPS_TABLE_1]]' not in generated:\n"
+            "                generated = generated.rstrip() + '\\n\\n[[WPS_TABLE_1]]'\n"
+            "            return generated\n"
             "        except Exception as exc:\n"
             "            __agentic_wps_body_format = 'plain'\n"
             "            fallback = panel_prompt(f'AI生成 WPS 正文失败：{exc}。请手动输入正文后继续：')\n"
@@ -590,6 +621,22 @@ class SkillRouter:
             "                return fallback\n"
             "            return __agentic_required_input('请手动输入 WPS 正文：', '正文')\n"
             "    return __agentic_confirm_required('body', current, '正文内容')\n\n"
+            "def __agentic_prepare_wps_tables(body):\n"
+            "    if not __agentic_wps_table_requested:\n"
+            "        return '-1'\n"
+            "    prompt = (\n"
+            "        '请为下面的 WPS 文章生成表格数据。只返回严格 JSON，不要使用 Markdown 代码块，不要解释。\\n'\n"
+            "        'JSON 必须使用这个结构：'\n"
+            "        '{\"tables\":[{\"placeholder\":\"[[WPS_TABLE_1]]\",'\n"
+            "        '\"title\":\"表格标题\",\"columns\":[\"列1\",\"列2\"],'\n"
+            "        '\"rows\":[[\"值1\",\"值2\"]],'\n"
+            "        '\"style\":{\"header_bold\":true,\"border\":\"grid\",\"auto_fit\":true}}]}。\\n'\n"
+            "        '要求：只生成一个表格；列数 2 到 8；数据行不超过 20；每行列数必须与 columns 一致；'\n"
+            "        '不能确定的内容用合理概括，不要伪造精确实时数据。\\n'\n"
+            "        f'用户表格要求：{__agentic_wps_table_requirement}\\n\\n'\n"
+            "        f'文章正文：\\n{body}'\n"
+            "    )\n"
+            "    return __agentic_generate_text(prompt, 'WPS表格数据')\n\n"
             "def __agentic_prepare_wps_title(current, body, allow_ai, markdown_path):\n"
             "    if not __agentic_is_missing_param(markdown_path) and not __agentic_is_missing_param(current):\n"
             "        return current\n"
@@ -652,16 +699,74 @@ class SkillRouter:
             "    if not answer_text:\n"
             "        return default_value\n"
             "    return aliases.get(answer_text, default_value)\n"
+            "\n"
+            "def __agentic_prepare_wps_image(insert_image, image_path):\n"
+            "    true_values = {'true', '1', 'yes', 'y', '是', '需要', '插入', '添加', '加入', '放入'}\n"
+            "    false_values = {'false', '0', 'no', 'n', '否', '不需要', '不要', '无需', '取消'}\n"
+            "    image_text = str(image_path or '').strip()\n"
+            "    choice_text = str(insert_image or '').strip().lower()\n"
+            "    if choice_text in false_values:\n"
+            "        default_choice = 'no'\n"
+            "    elif not __agentic_is_missing_param(image_text) or choice_text in true_values:\n"
+            "        default_choice = 'yes'\n"
+            "    else:\n"
+            "        default_choice = 'no'\n"
+            "    answer = panel_prompt(\n"
+            "        f'是否在 WPS 文档末尾插入图片？当前默认：{default_choice}。[yes] [no]'\n"
+            "    )\n"
+            "    answer_text = str(answer or '').strip().lower() or default_choice\n"
+            "    if answer_text in false_values or answer_text == 'no':\n"
+            "        return '-1'\n"
+            "    if answer_text not in true_values and answer_text != 'yes':\n"
+            "        return '-1'\n"
+            "    current = image_text if not __agentic_is_missing_param(image_text) else '-1'\n"
+            "    attempts = 0\n"
+            "    while True:\n"
+            "        attempts += 1\n"
+            "        answer = panel_prompt(\n"
+            "            f'请输入或确认要插入的本地图片完整路径。当前值：{current}'\n"
+            "        )\n"
+            "        answer = str(answer or '').strip().strip('\\\"').strip(\"'\")\n"
+            "        if answer:\n"
+            "            return answer\n"
+            "        if not __agentic_is_missing_param(current):\n"
+            "            return current\n"
+            "        if attempts >= 3:\n"
+            "            raise RuntimeError('选择插入图片后必须提供本地图片完整路径')\n"
+            "\n"
+            "def __agentic_prepare_wps_file_name(current, title):\n"
+            "    title_text = str(title or '').strip()\n"
+            "    default_name = title_text if not __agentic_is_missing_param(title_text) else '新建文档'\n"
+            "    current_text = str(current or '').strip()\n"
+            "    if not __agentic_is_missing_param(current_text):\n"
+            "        default_name = current_text\n"
+            "    panel_set_fields([{\n"
+            "        'name': 'file_name',\n"
+            "        'label': '文档名称',\n"
+            "        'required': False,\n"
+            "        'default_value': default_name,\n"
+            "    }])\n"
+            "    try:\n"
+            "        answer = panel_prompt(\n"
+            "            f'请输入 WPS 文档名称（不含扩展名），或点击“使用默认值 {default_name}”。'\n"
+            "        )\n"
+            "    finally:\n"
+            "        panel_set_fields([])\n"
+            "    answer = str(answer or '').strip().strip('\\\"').strip(\"'\")\n"
+            "    return answer or default_name\n"
         )
 
         return (
             f"{source_code}"
             f"{helper}"
             f"__agentic_wps_body_format = {body_format_value}\n"
+            "__agentic_wps_table_requested = False\n"
+            "__agentic_wps_table_requirement = '-1'\n"
             "if __agentic_is_missing_param(__agentic_wps_body_format):\n"
             "    __agentic_wps_body_format = 'plain'\n"
             f"__wps_markdown_path = {markdown_path_value}\n"
             f"__param_body = __agentic_prepare_wps_body({body_value}, {title_value}, {body_ai_generate!r}, __wps_markdown_path)\n"
+            "__param_table_json = __agentic_prepare_wps_tables(__param_body)\n"
             f"__param_title = __agentic_prepare_wps_title({title_value}, __param_body, {title_ai_generate!r}, __wps_markdown_path)\n"
             f"__legacy_font_name = {font_name_value}\n"
             f"__legacy_font_size = {font_size_value}\n"
@@ -669,8 +774,10 @@ class SkillRouter:
             f"__param_title_font_size = __agentic_optional_input('标题字号', {title_font_size_value}, {title_font_size_default})\n"
             f"__param_body_font_name = __agentic_optional_input('正文字体', {body_font_name_value} if not __agentic_is_missing_param({body_font_name_value}) else __legacy_font_name, {body_font_name_default})\n"
             f"__param_body_font_size = __agentic_optional_input('正文字号', {body_font_size_value} if not __agentic_is_missing_param({body_font_size_value}) else __legacy_font_size, {body_font_size_default})\n"
+            f"__param_image_path = __agentic_prepare_wps_image({insert_image_value}, {image_path_value})\n\n"
             f"__param_output_dir, __param_docx_path, __param_pdf_path = __agentic_prepare_wps_save_path({output_dir_value}, {docx_path_value}, {pdf_path_value}, {default_output_dir_value})\n\n"
             f"__param_output_format = __agentic_prepare_wps_output_format({output_format_value})\n\n"
+            f"__param_file_name = __agentic_prepare_wps_file_name({file_name_value}, __param_title)\n\n"
             "# 自动调用\n"
             "run(\n"
             "    title=__param_title,\n"
@@ -679,7 +786,7 @@ class SkillRouter:
             "    docx_path=__param_docx_path,\n"
             "    pdf_path=__param_pdf_path,\n"
             "    output_format=__param_output_format,\n"
-            f"    file_name={file_name_value},\n"
+            "    file_name=__param_file_name,\n"
             "    markdown_path=__wps_markdown_path,\n"
             "    body_format=__agentic_wps_body_format,\n"
             "    font_name=__legacy_font_name,\n"
@@ -690,7 +797,8 @@ class SkillRouter:
             "    body_font_size=__param_body_font_size,\n"
             f"    font_color={font_color_value},\n"
             f"    italic={italic_value},\n"
-            f"    image_path={image_path_value},\n"
+            "    image_path=__param_image_path,\n"
+            "    table_json=__param_table_json,\n"
             ")"
         )
 
@@ -1343,7 +1451,7 @@ class SkillRouter:
                 labels = r"图片地址|图片路径|图片|图像|image_path|image|地址|path"
 
             quoted = re.search(
-                rf"(?:{labels})\s*(?:是|为|:|：|=)?\s*['\"“‘]([^'\"“”‘’]+?\.(?:{extensions}))['\"”’]",
+                rf"(?:{labels})\s*(?:是|为|时|位于|:|：|=)?\s*['\"“‘]([^'\"“”‘’]+?\.(?:{extensions}))['\"”’]",
                 task,
                 re.IGNORECASE,
             )
@@ -1351,7 +1459,7 @@ class SkillRouter:
                 return quoted.group(1).strip()
 
             labeled = re.search(
-                rf"(?:{labels})\s*(?:是|为|:|：|=)?\s*['\"“”‘’]?([A-Za-z]:[\\/][^'\"“”‘’\s，,。；;]+?\.(?:{extensions}))",
+                rf"(?:{labels})\s*(?:是|为|时|位于|:|：|=)?\s*['\"“”‘’]?([A-Za-z]:[\\/][^'\"“”‘’\s，,。；;]+?\.(?:{extensions}))",
                 task,
                 re.IGNORECASE,
             )
@@ -1382,6 +1490,20 @@ class SkillRouter:
                     return style
 
         if ptype == "boolean":
+            if param_name == "insert_image":
+                if re.search(
+                    r"(?:不要|不需要|无需|取消)(?:插入|添加|加入|放入)?(?:一张|本地)?图片",
+                    task,
+                    re.IGNORECASE,
+                ):
+                    return "false"
+                if re.search(
+                    r"(?:插入|添加|加入|放入)(?:一张|本地)?图片|(?:需要|要)(?:一张|本地)?图片",
+                    task,
+                    re.IGNORECASE,
+                ):
+                    return "true"
+                return None
             if param_name in {"add-picture", "add_picture"}:
                 if re.search(
                     r"(配图|加图|加图片|生成图片|插入图片|AI\s*配图|ai\s*picture|add[-_ ]?picture)",
