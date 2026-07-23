@@ -147,7 +147,8 @@ function SettingsView({ initialSection }: { initialSection: "api" | "browser" })
     maxSteps: 20,
     useCloakBrowser: true,
     exploreOcrEnabled: true,
-    exploreVisionEnabled: false
+    exploreVisionEnabled: false,
+    logLevel: "INFO"
   });
   const [saved, setSaved] = useState(false);
   const [showApiKey, setShowApiKey] = useState(false);
@@ -333,7 +334,7 @@ function AboutView() {
         <div><h1>{BRAND.name}</h1><p>{BRAND.tagline}</p></div>
       </section>
       <p className="about-description">{BRAND.description} FeatherDesk 把技能路由、Playwright 自动化、视觉探索和桌面宠物交互整合在同一套本地工作流中。</p>
-      <dl><dt>桌面端版本</dt><dd>{BRAND.version}</dd><dt>后端</dt><dd>Python · FastAPI · Playwright</dd><dt>数据存储</dt><dd>本机 SQLite</dd><dt>浏览器界面</dt><dd>仅显示目标网页，不注入 Agent UI</dd><dt>GitHub 仓库</dt><dd><button className="external-link" onClick={() => void window.desktopAgent.openExternal(BRAND.repositoryUrl)}><GitFork size={16} />feitianduowen/agentic-playwright-mcp</button></dd></dl>
+      <dl><dt>桌面端版本</dt><dd>{BRAND.version}</dd><dt>后端</dt><dd>Python · FastAPI · Playwright</dd><dt>数据存储</dt><dd>本机 SQLite</dd><dt>浏览器界面</dt><dd>仅显示目标网页，不注入 Agent UI</dd><dt>GitHub 仓库</dt><dd><button className="external-link" onClick={() => void window.desktopAgent.openExternal(BRAND.repositoryUrl)}><GitFork size={16} />zceeeeee/FeatherDesk</button></dd></dl>
     </div>
   );
 }
